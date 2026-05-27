@@ -1,0 +1,1249 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Real Estate Dashboard — FGTS · Equity Research</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js" onerror="this.onerror=null;this.src='https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js'"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  :root {
+    --black: #000000;
+    --orange: #FF6200;
+    --yellow: #FFB600;
+    --green: #57B49A;
+    --lime: #A6CF2D;
+    --gray: #BFBFBF;
+    --gray-50: #f7f7f7;
+    --gray-100: #ececec;
+    --gray-200: #dcdcdc;
+    --text: #1a1a1a;
+    --text-muted: #6b6b6b;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { font-family: Arial, sans-serif; }
+  body {
+    background: var(--gray-50); color: var(--text); font-size: 14px;
+    -webkit-font-smoothing: antialiased;
+  }
+  .topbar {
+    background: var(--black); color: #fff; padding: 0 28px;
+    height: 52px; display: flex; align-items: center; justify-content: space-between;
+    border-bottom: 3px solid var(--orange);
+  }
+  .topbar .logo { display: flex; align-items: center; gap: 12px; }
+  .topbar .logo-mark {
+    width: 28px; height: 28px; background: var(--orange); border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; color: #fff; font-size: 14px;
+  }
+  .topbar .logo-text { font-weight: 600; font-size: 14px; letter-spacing: 0.2px; }
+  .topbar .logo-text span { color: var(--gray); font-weight: 400; margin-left: 8px; }
+  .topbar .user { font-size: 12px; color: var(--gray); }
+
+  .layout { display: grid; grid-template-columns: 240px 1fr; min-height: calc(100vh - 52px); }
+  aside {
+    background: #fff; border-right: 1px solid var(--gray-100);
+    padding: 20px 0; position: sticky; top: 52px;
+    height: calc(100vh - 52px); overflow-y: auto;
+  }
+  .nav-section {
+    padding: 14px 22px 6px; font-size: 10px; text-transform: uppercase;
+    letter-spacing: 1.4px; color: var(--text-muted); font-weight: 600;
+  }
+  .nav-item {
+    display: block; padding: 9px 22px; color: var(--text);
+    text-decoration: none; font-size: 13px; font-weight: 500;
+    border-left: 3px solid transparent; transition: all 0.15s;
+  }
+  .nav-item:hover { background: var(--gray-50); }
+  .nav-item.active {
+    background: #fff7f0; color: var(--orange);
+    border-left-color: var(--orange); font-weight: 600;
+  }
+  .nav-sub {
+    display: block; padding: 7px 22px 7px 38px; font-size: 12px;
+    color: var(--text-muted); text-decoration: none; cursor: pointer;
+  }
+  .nav-sub:hover { color: var(--text); }
+  .nav-sub.active { color: var(--orange); font-weight: 600; }
+  .nav-sub.soon { cursor: default; }
+  .nav-sub.soon::after {
+    content: 'em breve'; font-size: 9px; background: var(--gray-100);
+    color: var(--text-muted); padding: 2px 6px; border-radius: 8px;
+    margin-left: 8px; text-transform: uppercase; letter-spacing: 0.5px;
+  }
+  main { padding: 32px 40px; max-width: 1440px; }
+  .crumbs { font-size: 12px; color: var(--text-muted); margin-bottom: 8px; font-weight: 500; }
+  .crumbs span { margin: 0 8px; color: var(--gray); }
+  .crumbs .current { color: var(--orange); font-weight: 600; }
+  h2 { font-size: 26px; font-weight: 700; color: var(--black); letter-spacing: -0.4px; }
+  .subtitle { font-size: 13px; color: var(--text-muted); margin: 6px 0 28px; font-weight: 400; }
+  .page-head {
+    display: flex; justify-content: space-between; align-items: flex-start;
+    gap: 24px; margin-bottom: 6px;
+  }
+  .btn-download {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: var(--orange); color: #fff; border: none;
+    padding: 10px 16px; border-radius: 8px; cursor: pointer;
+    font-family: Arial, sans-serif; font-size: 13px; font-weight: 600;
+    letter-spacing: 0.1px; transition: all 0.15s; white-space: nowrap;
+  }
+  .btn-download:hover { background: #e25600; transform: translateY(-1px); }
+  .btn-download svg { width: 16px; height: 16px; }
+
+  .kpi-grid {
+    display: grid; grid-template-columns: repeat(5, 1fr);
+    gap: 14px; margin-bottom: 32px;
+  }
+  @media (max-width: 1200px) { .kpi-grid { grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); } }
+  .kpi {
+    background: #fff; padding: 18px 20px; border-radius: 10px;
+    border: 1px solid var(--gray-100);
+    position: relative; overflow: hidden;
+  }
+  .kpi.primary { border-color: var(--orange); }
+  .kpi.primary::before {
+    content: ''; position: absolute; top: 0; left: 0; bottom: 0;
+    width: 4px; background: var(--orange);
+  }
+  .kpi-header { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  .kpi-label {
+    font-size: 10px; text-transform: uppercase; letter-spacing: 1px;
+    color: var(--text-muted); font-weight: 600;
+  }
+  .kpi-ref {
+    font-size: 10px; font-weight: 600; color: var(--orange);
+    background: #fff7f0; padding: 2px 8px; border-radius: 10px;
+    text-transform: lowercase; font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+  .kpi-value {
+    font-size: 26px; font-weight: 700; color: var(--black); margin-top: 8px;
+    font-variant-numeric: tabular-nums; letter-spacing: -0.5px;
+  }
+  .kpi-foot { font-size: 11px; color: var(--text-muted); margin-top: 4px;
+              font-variant-numeric: tabular-nums; }
+  .kpi-foot.pos { color: var(--green); font-weight: 600; }
+  .kpi-foot.neg { color: #d23b3b; font-weight: 600; }
+
+  .card {
+    background: #fff; border: 1px solid var(--gray-100); border-radius: 10px;
+    padding: 24px 28px; margin-bottom: 20px;
+  }
+  .card-head { display: flex; justify-content: space-between; align-items: center;
+                gap: 16px; margin-bottom: 4px; }
+  .card h3 { font-size: 16px; font-weight: 600; color: var(--black); letter-spacing: -0.2px; }
+  .card-sub { font-size: 12px; color: var(--text-muted); margin-bottom: 18px; }
+  .chart-filters {
+    display: flex; flex-wrap: wrap; gap: 18px; align-items: center;
+    margin: 6px 0 16px; padding: 12px 0;
+    border-top: 1px solid var(--gray-100); border-bottom: 1px solid var(--gray-100);
+  }
+  .filter-group { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  .filter-label {
+    font-size: 10px; text-transform: uppercase; letter-spacing: 1px;
+    color: var(--text-muted); font-weight: 600; margin-right: 2px;
+  }
+  .filter-hint { font-size: 11px; color: var(--text-muted); margin-left: 6px; font-style: italic; }
+  .filter-chip {
+    background: #fff; color: var(--orange); border: 1px solid var(--orange);
+    padding: 4px 10px; border-radius: 14px; cursor: pointer;
+    font: 600 11px/1.2 Arial; letter-spacing: 0.2px;
+    transition: all 0.15s; user-select: none;
+  }
+  .filter-chip:hover { background: #fff7f0; }
+  .filter-chip.active { background: var(--orange); color: #fff; }
+  .filter-chip.series-chip {
+    display: inline-flex; align-items: center; gap: 6px;
+    color: var(--text); border-color: var(--gray-100); background: #fff;
+  }
+  .filter-chip.series-chip:hover { background: #fff7f0; border-color: var(--orange); }
+  .filter-chip.series-chip::before {
+    content: ''; width: 14px; height: 2px;
+    background: var(--chip-color, var(--orange));
+  }
+  .filter-chip.series-chip.off { background: #f7f7f7; color: var(--gray); border-color: var(--gray-100); }
+  .filter-chip.series-chip.off::before { background: var(--gray); }
+  .chart-filters select, .chart-filters input[type="month"] {
+    font: 500 11px Arial; padding: 5px 8px; border: 1px solid var(--gray-100);
+    border-radius: 6px; color: var(--text); background: #fff;
+    font-variant-numeric: tabular-nums; cursor: pointer;
+  }
+  .chart-filters select:focus, .chart-filters input[type="month"]:focus {
+    outline: none; border-color: var(--orange);
+    box-shadow: 0 0 0 2px #fff7f0;
+  }
+  .chart-wrap { position: relative; height: 380px; }
+  .chart-wrap.tall { height: 460px; }
+  .legend-note {
+    font-size: 11px; color: var(--text-muted); margin-top: 12px;
+    padding-top: 12px; border-top: 1px solid var(--gray-100);
+    line-height: 1.5;
+  }
+  .legend-note strong { color: var(--orange); font-weight: 600; }
+  footer {
+    margin-top: 36px; padding-top: 20px; border-top: 1px solid var(--gray-100);
+    font-size: 11px; color: var(--text-muted); line-height: 1.7;
+  }
+  footer strong { color: var(--text); font-weight: 600; }
+
+  /* ---- Grid de duas colunas para gráficos secundários ---- */
+  .card-grid-2 {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 20px; margin-bottom: 20px;
+  }
+  @media (max-width: 1100px) { .card-grid-2 { grid-template-columns: 1fr; } }
+  .card-grid-2 .card { margin-bottom: 0; }
+
+  /* ---- Tabela FGTS existente ---- */
+  .fgts-table {
+    width: 100%; border-collapse: collapse; font-size: 12px;
+    font-variant-numeric: tabular-nums; min-width: 1100px;
+    table-layout: fixed;
+  }
+  .fgts-table thead th {
+    background: #1a1a1a; color: #fff; font-weight: 600;
+    text-align: center; padding: 6px 8px;
+    border-right: 1px solid #2a2a2a; border-bottom: 1px solid #2a2a2a;
+  }
+  .fgts-table thead th.col-group { font-size: 10px; text-transform: uppercase; letter-spacing: 0.8px; }
+  .fgts-table thead th.col-name { font-size: 11px; line-height: 1.25; }
+  .fgts-table thead th.col-sub { font-size: 10px; font-weight: 400; color: var(--gray); letter-spacing: 0.3px; padding: 4px 8px 8px; }
+  .fgts-table tbody td {
+    padding: 5px 8px; border-bottom: 1px solid var(--gray-100);
+    border-right: 1px solid var(--gray-100);
+    text-align: right; font-size: 11.5px;
+  }
+  .fgts-table tbody td.label { text-align: left; font-weight: 500; }
+  .fgts-table tr.region-row td {
+    background: #f7f7f7; font-weight: 700; font-size: 11px;
+    text-transform: uppercase; letter-spacing: 0.4px; color: var(--text);
+  }
+  .fgts-table tr.region-row td.label { color: var(--orange); }
+  .fgts-table tr.total-row td {
+    background: #1a1a1a; color: #fff; font-weight: 700; font-size: 12px;
+  }
+  .fgts-table tr.total-row td.yoy-pos { color: var(--lime); }
+  .fgts-table tr.total-row td.yoy-neg { color: #ff8a8a; }
+  .fgts-table .yoy-pos { color: var(--green); font-weight: 600; }
+  .fgts-table .yoy-neg { color: #d23b3b; font-weight: 600; }
+  .fgts-table tbody tr.uf-row:hover td { background: #fffaf5; }
+
+  /* ---- Heatmap ---- */
+  .heatmap-wrap { overflow-x: auto; }
+  .heatmap {
+    width: 100%; border-collapse: collapse; font-size: 12px;
+    font-variant-numeric: tabular-nums;
+  }
+  .heatmap th {
+    background: #fff; color: var(--text-muted); font-weight: 600;
+    font-size: 10px; text-transform: uppercase; letter-spacing: 0.6px;
+    padding: 10px 12px; text-align: center;
+    border-bottom: 2px solid var(--gray-100);
+  }
+  .heatmap th.row-label { text-align: left; min-width: 130px; }
+  .heatmap td {
+    padding: 14px 8px; text-align: center; font-weight: 600;
+    color: var(--text); border-right: 2px solid #fff;
+    border-bottom: 2px solid #fff;
+    font-size: 12px;
+  }
+  .heatmap td.row-label {
+    background: #fafafa; color: var(--text); text-align: left;
+    font-weight: 700; font-size: 11px; padding: 10px 14px;
+    text-transform: uppercase; letter-spacing: 0.4px;
+  }
+  .heatmap td.total {
+    background: #1a1a1a; color: #fff; font-weight: 700;
+  }
+  .heatmap-cell-value { display: block; font-size: 12px; }
+  .heatmap-cell-share { display: block; font-size: 10px; font-weight: 400; opacity: 0.75; margin-top: 2px; }
+
+</style>
+</head>
+<body>
+
+<!-- ===== SUPABASE LOGIN GATE ===== -->
+<script>
+  const SUPABASE_URL  = "https://guzoripmdqclgxrllfvj.supabase.co";
+  const SUPABASE_ANON = "sb_publishable_rN8qCD-VFePFYx9yqtswGg_Rc1DWQgR";
+</script>
+
+<div id="gate" style="
+  position:fixed;inset:0;z-index:9999;
+  background:#000;
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Segoe UI',Arial,sans-serif;
+">
+  <div style="
+    background:#1a1a1a;border-radius:16px;padding:48px 40px;
+    width:100%;max-width:380px;box-shadow:0 8px 40px rgba(0,0,0,.6);
+    border:1px solid #2a2a2a;text-align:center;
+  ">
+    <div style="font-size:2rem;margin-bottom:8px">&#127968;</div>
+    <h2 style="color:#fff;font-size:1.2rem;font-weight:700;margin-bottom:4px">Real Estate Dashboard</h2>
+    <p style="color:#888;font-size:.8rem;margin-bottom:32px">Equity Research</p>
+
+    <input id="email" type="text" placeholder="Usuario" autocomplete="username" autocapitalize="none" spellcheck="false"
+      style="
+        width:100%;padding:12px 16px;border-radius:8px;
+        border:1.5px solid #333;background:#111;color:#fff;
+        font-size:.95rem;outline:none;margin-bottom:10px;
+        transition:border .2s;
+      "
+      onfocus="this.style.borderColor='#FF6200'"
+      onblur="this.style.borderColor='#333'"
+    />
+    <input id="pwd" type="password" placeholder="Senha" autocomplete="current-password"
+      style="
+        width:100%;padding:12px 16px;border-radius:8px;
+        border:1.5px solid #333;background:#111;color:#fff;
+        font-size:.95rem;outline:none;margin-bottom:12px;
+        transition:border .2s;
+      "
+      onkeydown="if(event.key==='Enter')doLogin()"
+      onfocus="this.style.borderColor='#FF6200'"
+      onblur="this.style.borderColor='#333'"
+    />
+    <div id="gate-err" style="color:#e63946;font-size:.78rem;margin-bottom:10px;min-height:18px"></div>
+    <button id="gate-btn" onclick="doLogin()" style="
+      width:100%;padding:12px;border-radius:8px;border:none;
+      background:#FF6200;color:#fff;font-size:.95rem;font-weight:700;
+      cursor:pointer;transition:background .2s;
+    "
+    onmouseover="this.style.background='#d75300'"
+    onmouseout="this.style.background='#FF6200'"
+    >Entrar</button>
+  </div>
+</div>
+
+<div id="app" style="display:none">
+
+<script>
+  // Cliente Supabase
+  const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+
+  // Usuario "publico" da tela -> email real no Supabase
+  const LOGIN_TO_EMAIL = {
+    "ibba": "admin@fenabrave.local"
+  };
+
+  async function doLogin(){
+    const user = document.getElementById('email').value.trim().toLowerCase();
+    const password = document.getElementById('pwd').value;
+    const errEl = document.getElementById('gate-err');
+    const btn = document.getElementById('gate-btn');
+    errEl.textContent = '';
+    if(!user || !password){
+      errEl.textContent = 'Preencha usuario e senha.';
+      return;
+    }
+    const realEmail = LOGIN_TO_EMAIL[user];
+    if(!realEmail){
+      errEl.textContent = 'Usuario ou senha incorretos.';
+      document.getElementById('pwd').value = '';
+      setTimeout(()=>errEl.textContent='', 3500);
+      return;
+    }
+    btn.disabled = true; btn.textContent = 'Entrando...';
+    const { data, error } = await sb.auth.signInWithPassword({ email: realEmail, password });
+    btn.disabled = false; btn.textContent = 'Entrar';
+    if(error){
+      errEl.textContent = 'Usuario ou senha incorretos.';
+      document.getElementById('pwd').value = '';
+      setTimeout(()=>errEl.textContent='', 3500);
+      return;
+    }
+    showApp();
+  }
+
+  async function doLogout(){
+    await sb.auth.signOut();
+    location.reload();
+  }
+
+  function showApp(){
+    document.getElementById('gate').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+  }
+
+  sb.auth.getSession().then(({ data }) => {
+    if(data && data.session) showApp();
+  });
+</script>
+
+<div class="topbar">
+  <div class="logo">
+    <div class="logo-mark">i</div>
+    <div class="logo-text">Real Estate Dashboard <span>Equity Research</span></div>
+  </div>
+  <div style="display:flex;align-items:center;gap:12px">
+    <div class="user">Juliana Veiga &middot; ANL 2 Equities Research</div>
+    <button onclick="doLogout()" title="Sair" style="
+      background:transparent;color:#fff;border:1px solid rgba(255,255,255,.25);
+      font-size:.72rem;padding:5px 12px;border-radius:6px;cursor:pointer;
+      font-family:inherit;
+    " onmouseover="this.style.background='rgba(255,255,255,.10)'"
+       onmouseout="this.style.background='transparent'"
+    >Sair</button>
+  </div>
+</div>
+
+<div class="layout">
+  <aside>
+    <div class="nav-section">Macro &amp; Setorial</div>
+    <a class="nav-item active" href="#">Residencial</a>
+    <a class="nav-sub" href="#incc">INCC</a>
+    <a class="nav-sub" href="#sbpe">SBPE</a>
+    <a class="nav-sub active" href="#fgts">FGTS</a>
+    <a class="nav-sub soon">Secovi</a>
+    <a class="nav-item" href="#">Comercial</a>
+
+    <div class="nav-section">Companhias</div>
+    <a class="nav-item" href="#">Incorporadoras</a>
+    <a class="nav-item" href="#">Shoppings</a>
+
+    <div class="nav-section">Outros</div>
+    <a class="nav-item" href="#">Notícias &amp; Releases</a>
+    <a class="nav-item" href="#">Calendário</a>
+  </aside>
+
+  <main>
+
+    <div class="crumbs">Macro &amp; Setorial <span>›</span> Residencial <span>›</span> <span class="current">FGTS</span></div>
+    <div class="page-head">
+      <div>
+        <h2>FGTS — Fundo de Garantia do Tempo de Serviço</h2>
+        <p class="subtitle">Funding, originação habitacional e quebras por modalidade · Atualizado em 14/05/2026</p>
+      </div>
+      <button class="btn-download" title="Baixar a base de dados em CSV">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+          <polyline points="7 10 12 15 17 10"></polyline>
+          <line x1="12" y1="15" x2="12" y2="3"></line>
+        </svg>
+        Baixar base (CSV)
+      </button>
+    </div>
+
+    <!-- ============== KPIs (5) ============== -->
+    <div class="kpi-grid">
+      <div class="kpi primary">
+        <div class="kpi-header">
+          <div class="kpi-label">Originação YTD</div>
+          <div class="kpi-ref">abr/26</div>
+        </div>
+        <div class="kpi-value">R$ 24,8 bi</div>
+        <div class="kpi-foot pos">+12,4% a/a vs. R$ 22,1 bi em 4M25</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-header">
+          <div class="kpi-label">Originação LTM 12m</div>
+          <div class="kpi-ref">abr/26</div>
+        </div>
+        <div class="kpi-value">R$ 76,3 bi</div>
+        <div class="kpi-foot pos">+8,7% a/a · pico desde 2023</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-header">
+          <div class="kpi-label">Arrecadação líquida YTD</div>
+          <div class="kpi-ref">abr/26</div>
+        </div>
+        <div class="kpi-value">R$ 9,1 bi</div>
+        <div class="kpi-foot pos">arrec. R$ 51,2 bi − saques R$ 42,1 bi</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-header">
+          <div class="kpi-label">Modalidade dominante</div>
+          <div class="kpi-ref">YTD 26</div>
+        </div>
+        <div class="kpi-value">Apoio PJ</div>
+        <div class="kpi-foot">38,2% da originação · Construction Loans</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-header">
+          <div class="kpi-label">UF líder</div>
+          <div class="kpi-ref">YTD 26</div>
+        </div>
+        <div class="kpi-value">SP</div>
+        <div class="kpi-foot">R$ 5,9 bi · 23,8% nacional</div>
+      </div>
+    </div>
+
+    <!-- ============== Gráfico 1: Funding (arrecadação × saques × líquido) ============== -->
+    <div class="card">
+      <div class="card-head">
+        <h3>Gráfico 1 — Funding FGTS: arrecadação, saques e captação líquida</h3>
+      </div>
+      <div class="card-sub">Fluxos mensais do FGTS em R$ bilhões · arrecadação bruta menos saques resulta no funding disponível para habitação · Fonte: Relatório de Gestão FGTS (Caixa)</div>
+      <div class="chart-filters">
+        <div class="filter-group">
+          <span class="filter-label">Período:</span>
+          <span class="filter-chip" data-funding-period="1A">1A</span>
+          <span class="filter-chip active" data-funding-period="3A">3A</span>
+          <span class="filter-chip" data-funding-period="5A">5A</span>
+          <span class="filter-chip" data-funding-period="ALL">Tudo</span>
+        </div>
+        <div class="filter-group" id="funding-series-chips">
+          <span class="filter-label">Séries:</span>
+          <span class="filter-chip series-chip active" data-funding-series="arrecadacao" style="--chip-color: var(--green);">Arrecadação</span>
+          <span class="filter-chip series-chip active" data-funding-series="saques" style="--chip-color: var(--orange);">Saques</span>
+          <span class="filter-chip series-chip active" data-funding-series="liquido" style="--chip-color: var(--black);">Captação líquida</span>
+        </div>
+      </div>
+      <div class="chart-wrap"><canvas id="funding-chart"></canvas></div>
+      <div class="legend-note">
+        Captação líquida = arrecadação bruta (depósitos compulsórios sobre folha) − saques (rescisões, MCMV, aniversário, etc.).
+        Funding líquido positivo expande a capacidade de novas contratações habitacionais; líquido negativo aperta a oferta de crédito.
+      </div>
+    </div>
+
+    <!-- ============== Gráfico 2: Originação por faixa MCMV — empilhado com filtro de geografia ============== -->
+    <div class="card">
+      <div class="card-head">
+        <h3>Gráfico 2 — Originação habitacional por faixa MCMV</h3>
+      </div>
+      <div class="card-sub">Desembolso mensal empilhado por faixa do programa (Faixa 1 a 4 + Fora do MCMV) · seletor de geografia (Brasil, região ou UF específica) · Fonte: Caixa Econômica Federal (FGTS)</div>
+      <div class="chart-filters">
+        <div class="filter-group">
+          <span class="filter-label">Período:</span>
+          <span class="filter-chip" data-stack-period="1A">1A</span>
+          <span class="filter-chip active" data-stack-period="3A">3A</span>
+          <span class="filter-chip" data-stack-period="ALL">Tudo</span>
+        </div>
+        <div class="filter-group">
+          <span class="filter-label">Geografia:</span>
+          <select id="stack-geo">
+            <option value="BR" selected>Brasil (consolidado)</option>
+            <optgroup label="Regiões">
+              <option value="REG:NORTE">Norte</option>
+              <option value="REG:NORDESTE">Nordeste</option>
+              <option value="REG:CENTRO-OESTE">Centro-Oeste</option>
+              <option value="REG:SUDESTE">Sudeste</option>
+              <option value="REG:SUL">Sul</option>
+            </optgroup>
+            <optgroup label="UFs (principais)">
+              <option value="UF:SP">São Paulo</option>
+              <option value="UF:MG">Minas Gerais</option>
+              <option value="UF:RJ">Rio de Janeiro</option>
+              <option value="UF:BA">Bahia</option>
+              <option value="UF:PR">Paraná</option>
+              <option value="UF:RS">Rio Grande do Sul</option>
+              <option value="UF:SC">Santa Catarina</option>
+              <option value="UF:GO">Goiás</option>
+              <option value="UF:PE">Pernambuco</option>
+              <option value="UF:CE">Ceará</option>
+              <option value="UF:DF">Distrito Federal</option>
+              <option value="UF:ES">Espírito Santo</option>
+            </optgroup>
+          </select>
+        </div>
+        <div class="filter-group" id="stack-series-chips">
+          <span class="filter-label">Faixas:</span>
+          <span class="filter-chip series-chip active" data-stack-series="faixa_1"  style="--chip-color: var(--orange);">Faixa 1</span>
+          <span class="filter-chip series-chip active" data-stack-series="faixa_2"  style="--chip-color: var(--yellow);">Faixa 2</span>
+          <span class="filter-chip series-chip active" data-stack-series="faixa_3"  style="--chip-color: var(--green);">Faixa 3</span>
+          <span class="filter-chip series-chip active" data-stack-series="faixa_4"  style="--chip-color: var(--lime);">Faixa 4</span>
+          <span class="filter-chip series-chip active" data-stack-series="fora_mcmv" style="--chip-color: var(--gray);">Fora do MCMV</span>
+        </div>
+      </div>
+      <div class="chart-wrap tall"><canvas id="stack-chart"></canvas></div>
+      <div class="legend-note">
+        <strong>Faixa 1</strong> = renda familiar até R$ 2.850 (maior subsídio) ·
+        <strong>Faixa 2</strong> = R$ 2.850 a R$ 4.700 ·
+        <strong>Faixa 3</strong> = R$ 4.700 a R$ 8.600 ·
+        <strong>Faixa 4</strong> = R$ 8.600 a R$ 12.000 ·
+        <strong>Fora do MCMV</strong> = operações FGTS habitacionais fora do programa (Pró-Cotista e outras).
+      </div>
+    </div>
+
+    <!-- ============== Grid: Top 10 UFs + Heatmap ============== -->
+    <div class="card-grid-2">
+      <div class="card">
+        <div class="card-head">
+          <h3>Gráfico 3 — Top 10 UFs por originação YTD</h3>
+        </div>
+        <div class="card-sub">Ranking de estados por desembolso habitacional FGTS acumulado no ano até o mês de referência · com variação a/a</div>
+        <div class="chart-filters">
+          <div class="filter-group">
+            <span class="filter-label">Mês ref.:</span>
+            <input type="month" id="top-ref" value="2026-04" min="2024-01" max="2026-05">
+            <span class="filter-hint">soma de janeiro até o mês selecionado</span>
+          </div>
+        </div>
+        <div class="chart-wrap tall"><canvas id="top-uf-chart"></canvas></div>
+        <div class="legend-note">
+          Soma das 5 modalidades por UF. Barra colorida em verde indica crescimento a/a positivo, laranja indica queda relativa à mesma janela do ano anterior.
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <h3>Gráfico 4 — Mapa de calor regional × modalidade</h3>
+        </div>
+        <div class="card-sub">Originação YTD em R$ milhões · intensidade da cor proporcional ao valor · % entre parênteses indica share da modalidade dentro da região</div>
+        <div class="chart-filters">
+          <div class="filter-group">
+            <span class="filter-label">Mês ref.:</span>
+            <input type="month" id="heat-ref" value="2026-04" min="2024-01" max="2026-05">
+          </div>
+        </div>
+        <div class="heatmap-wrap">
+          <table class="heatmap" id="heatmap-table"></table>
+        </div>
+        <div class="legend-note">
+          Visão de duas dimensões para identificar concentração: linhas mostram regiões geográficas, colunas mostram as 5 modalidades FGTS.
+          Útil para detectar onde o Apoio à Produção PJ (incorporadoras) está mais ativo vs. onde predominam Carta de Crédito Individual e Social Fund.
+        </div>
+      </div>
+    </div>
+
+    <!-- ============== Tabela 1 (mantida do protótipo original) ============== -->
+    <div class="card" id="fgts-table-card">
+      <div class="card-head">
+        <h3>Tabela 1 — Originação FGTS por UF (R$ mi, YTD acumulado)</h3>
+      </div>
+      <div class="card-sub">YTD = soma de janeiro até o mês de referência · y/y vs. mesma janela do ano anterior · Fonte: Caixa Econômica Federal (FGTS)</div>
+      <div class="chart-filters">
+        <div class="filter-group">
+          <span class="filter-label">Mês de referência:</span>
+          <input type="month" id="fgts-ref" value="2026-04" min="2024-01" max="2026-05">
+          <span class="filter-hint">soma de janeiro até o mês selecionado</span>
+        </div>
+      </div>
+      <div id="fgts-table-wrap" style="overflow-x:auto;"></div>
+      <div class="legend-note">
+        Originação YTD por UF, agrupada por região, com variação % a/a vs. mesma janela do ano anterior.
+        <strong>Construction Loans</strong> = Apoio à Produção PJ ·
+        <strong>Mortgages — Apoio à Produção PF</strong>, <strong>Imóvel Novo</strong> e <strong>Imóvel Usado</strong> (Carta de Crédito Individual) ·
+        <strong>Social Fund</strong> = Faixa 4 / OPER. ESPECIAIS — HABITAÇÃO.
+      </div>
+    </div>
+
+    <footer>
+      <div><strong>Fonte:</strong> Caixa Econômica Federal (FGTS) · Relatório de Gestão FGTS · Base proprietária Itaú BBA Equity Research</div>
+      <div><strong>Periodicidade:</strong> mensal · <strong>Defasagem típica:</strong> 30-45 dias · <strong>Próxima atualização:</strong> com nova divulgação mensal da Caixa</div>
+    </footer>
+
+  </main>
+</div>
+
+<script>
+/* =========================================================================
+   DADOS — Originação por modalidade × UF × mês (do protótipo original).
+   Em produção isso virá da API alimentada pelos scripts Python.
+   ========================================================================= */
+const fgtsData = {
+  regions_order: ["NORTE","NORDESTE","CENTRO-OESTE","SUDESTE","SUL"],
+  ufs_by_region: {
+    "NORTE":["AC","AM","AP","PA","RO","RR","TO"],
+    "NORDESTE":["AL","BA","CE","MA","PB","PE","PI","RN","SE"],
+    "CENTRO-OESTE":["DF","GO","MS","MT"],
+    "SUDESTE":["ES","MG","RJ","SP"],
+    "SUL":["PR","RS","SC"]
+  }
+};
+
+const UF_FULLNAME = {
+  AC:'Acre', AL:'Alagoas', AP:'Amapá', AM:'Amazonas', BA:'Bahia', CE:'Ceará',
+  DF:'Distrito Federal', ES:'Espírito Santo', GO:'Goiás', MA:'Maranhão', MT:'Mato Grosso',
+  MS:'Mato Grosso do Sul', MG:'Minas Gerais', PA:'Pará', PB:'Paraíba', PR:'Paraná',
+  PE:'Pernambuco', PI:'Piauí', RJ:'Rio de Janeiro', RN:'Rio Grande do Norte',
+  RS:'Rio Grande do Sul', RO:'Rondônia', RR:'Roraima', SC:'Santa Catarina',
+  SP:'São Paulo', SE:'Sergipe', TO:'Tocantins'
+};
+
+const ALL_UFS = Object.keys(UF_FULLNAME);
+
+/* Modalidades FGTS — alinhadas com o documento de fontes */
+const MODALITIES = [
+  { key:'col_i',   label:'Construction Loans',  short:'Apoio PJ',      color:'#FF6200' },
+  { key:'col_ii',  label:'Apoio à Produção PF', short:'Apoio PF',      color:'#FFB600' },
+  { key:'col_iii', label:'Imóvel Novo',         short:'Novo',          color:'#57B49A' },
+  { key:'col_iv',  label:'Imóvel Usado',        short:'Usado',         color:'#A6CF2D' },
+  { key:'col_v',   label:'Social Fund',         short:'Social',        color:'#BFBFBF' },
+];
+
+/* =========================================================================
+   GERAÇÃO DE DADOS MOCKADOS (determinística e realista)
+   - Originação mensal por modalidade × UF (jan/2020 a abr/2026)
+   - Arrecadação e saques mensais FGTS (Brasil)
+   Em produção: trocar por dados reais do banco PostgreSQL.
+   ========================================================================= */
+function hash(str){let h=0;for(let i=0;i<str.length;i++){h=((h<<5)-h)+str.charCodeAt(i);h|=0;}return Math.abs(h);}
+function pseudoRand(seed){const x=Math.sin(seed)*10000;return x-Math.floor(x);}
+
+/* Pesos relativos de UF baseados em participação real (aprox.) */
+const UF_WEIGHTS = {
+  SP:23.5, MG:9.8, RJ:7.2, BA:6.1, PR:5.8, RS:5.3, SC:5.1, GO:4.6,
+  PE:3.9, CE:3.7, DF:3.4, ES:2.9, MT:2.5, PA:2.4, MS:2.1, MA:2.0,
+  PB:1.7, RN:1.6, AM:1.5, PI:1.4, AL:1.3, SE:1.0, TO:0.8, RO:0.7,
+  AP:0.4, AC:0.3, RR:0.2
+};
+
+/* Pesos das modalidades (share típica nacional) */
+const MOD_WEIGHTS = { col_i:0.38, col_ii:0.18, col_iii:0.22, col_iv:0.12, col_v:0.10 };
+
+const MONTHS = [];
+for (let y=2020; y<=2026; y++){
+  const lastM = (y===2026) ? 4 : 12;
+  for (let m=1; m<=lastM; m++){
+    MONTHS.push(`${y}-${String(m).padStart(2,'0')}`);
+  }
+}
+
+/* Base mensal nacional (R$ mi) com crescimento e sazonalidade */
+function baseMonthly(ym){
+  const [y,m] = ym.split('-').map(Number);
+  const t = (y-2020)*12 + (m-1);  // 0..76
+  const trend = 4200 + t*42;       // tendência crescente
+  const seas = Math.sin((m-3)/12 * 2*Math.PI) * 380; // pico no meio do ano
+  const noise = (pseudoRand(t*7.3) - 0.5) * 320;
+  return Math.max(2800, trend + seas + noise);
+}
+
+/* Originação por modalidade × UF × mês */
+const originationData = {};
+MODALITIES.forEach(mod => {
+  originationData[mod.key] = {};
+  ALL_UFS.forEach(uf => {
+    originationData[mod.key][uf] = {};
+    MONTHS.forEach(ym => {
+      const national = baseMonthly(ym);
+      const ufShare = (UF_WEIGHTS[uf] || 0.5) / 100;
+      const modShare = MOD_WEIGHTS[mod.key];
+      const ufModNoise = 0.85 + pseudoRand(hash(uf+mod.key+ym)) * 0.3;
+      const val = national * ufShare * modShare * ufModNoise;
+      // Pequena chance de mês zero (representa mês sem dado)
+      if (pseudoRand(hash(uf+mod.key+ym+'z')) < 0.06) return;
+      originationData[mod.key][uf][ym] = val;
+    });
+  });
+});
+
+/* Faixas MCMV — quebra alternativa de originação por programa */
+const FAIXAS = [
+  { key:'faixa_1',   label:'Faixa 1',       short:'F1',     color:'#FF6200' },
+  { key:'faixa_2',   label:'Faixa 2',       short:'F2',     color:'#FFB600' },
+  { key:'faixa_3',   label:'Faixa 3',       short:'F3',     color:'#57B49A' },
+  { key:'faixa_4',   label:'Faixa 4',       short:'F4',     color:'#A6CF2D' },
+  { key:'fora_mcmv', label:'Fora do MCMV',  short:'Outros', color:'#BFBFBF' },
+];
+
+/* Share típico nacional das faixas (mockado realista — Faixa 2 é a maior) */
+const FAIXA_WEIGHTS = { faixa_1:0.18, faixa_2:0.42, faixa_3:0.20, faixa_4:0.08, fora_mcmv:0.12 };
+
+/* Originação por faixa MCMV × UF × mês.
+   Em produção: virá da tabela de desembolso por faixa do Relatório de Gestão FGTS.
+   UFs mais pobres (NE/N) têm peso maior em F1; UFs mais ricas (SE/S) em F3/F4. */
+const FAIXA_UF_SKEW = {
+  // skew por UF: positivo = mais faixas baixas, negativo = mais faixas altas
+  AC:+0.20, AL:+0.25, AP:+0.20, AM:+0.15, BA:+0.18, CE:+0.20,
+  DF:-0.25, ES:-0.05, GO:-0.05, MA:+0.30, MT:-0.02, MS:-0.02,
+  MG:-0.05, PA:+0.15, PB:+0.20, PR:-0.10, PE:+0.15, PI:+0.25,
+  RJ:-0.15, RN:+0.18, RS:-0.12, RO:+0.05, RR:+0.15, SC:-0.15,
+  SP:-0.20, SE:+0.18, TO:+0.15
+};
+function adjustFaixaShare(faixaKey, uf){
+  const base = FAIXA_WEIGHTS[faixaKey];
+  const skew = FAIXA_UF_SKEW[uf] || 0;
+  // F1/F2 aumentam com skew positivo; F3/F4 diminuem; F1 pega skew dobrado
+  const mult = {
+    faixa_1: 1 + skew * 2,
+    faixa_2: 1 + skew * 0.8,
+    faixa_3: 1 - skew * 0.6,
+    faixa_4: 1 - skew * 1.4,
+    fora_mcmv: 1 - skew * 0.4
+  }[faixaKey];
+  return base * Math.max(0.15, mult);
+}
+
+const faixaData = {};
+FAIXAS.forEach(f => {
+  faixaData[f.key] = {};
+  ALL_UFS.forEach(uf => {
+    faixaData[f.key][uf] = {};
+    MONTHS.forEach(ym => {
+      const national = baseMonthly(ym);
+      const ufShare = (UF_WEIGHTS[uf] || 0.5) / 100;
+      const faixaShare = adjustFaixaShare(f.key, uf);
+      const noise = 0.85 + pseudoRand(hash(uf+f.key+ym+'fx')) * 0.3;
+      const val = national * ufShare * faixaShare * noise;
+      if (pseudoRand(hash(uf+f.key+ym+'fxz')) < 0.05) return;
+      faixaData[f.key][uf][ym] = val;
+    });
+  });
+});
+
+/* Arrecadação e saques mensais Brasil (R$ bi) — mockados realistas */
+const fundingMonthly = MONTHS.map(ym => {
+  const [y,m] = ym.split('-').map(Number);
+  const t = (y-2020)*12 + (m-1);
+  // Arrecadação ~R$ 11-14 bi/mês com crescimento
+  const arrec = 11.2 + t*0.045 + Math.sin((m-2)/12 * 2*Math.PI) * 0.8 + (pseudoRand(t*1.7)-0.5)*0.6;
+  // Saques ~R$ 9-12 bi/mês, mais voláteis (saque aniversário, MCMV)
+  const saques = 9.4 + t*0.038 + Math.sin((m-5)/12 * 2*Math.PI) * 1.1 + (pseudoRand(t*2.3)-0.5)*0.9;
+  return { ym, arrecadacao: arrec, saques: saques, liquido: arrec - saques };
+});
+
+/* =========================================================================
+   FORMATADORES
+   ========================================================================= */
+function fmtBR(v, dec=1){
+  if (v == null || !isFinite(v)) return '—';
+  return v.toLocaleString('pt-BR', { minimumFractionDigits: dec, maximumFractionDigits: dec });
+}
+function fmtPct(v){
+  if (v == null || !isFinite(v)) return '—';
+  const sign = v > 0 ? '+' : '';
+  return sign + v.toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 }) + '%';
+}
+function ymLabel(ym){
+  const [y,m] = ym.split('-');
+  const months = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
+  return `${months[parseInt(m,10)-1]}/${y.slice(2)}`;
+}
+function ytdSum(modKey, uf, year, monthEnd){
+  const series = (originationData[modKey] || {})[uf] || {};
+  let s=0, has=false;
+  for (let m=1; m<=monthEnd; m++){
+    const k = `${year}-${String(m).padStart(2,'0')}`;
+    if (series[k] != null){ s += series[k]; has = true; }
+  }
+  return { sum: s, hasData: has };
+}
+
+/* =========================================================================
+   GRÁFICO 1 — FUNDING (arrecadação × saques × líquido)
+   ========================================================================= */
+let fundingChart;
+const fundingState = {
+  period: '3A',
+  series: { arrecadacao: true, saques: true, liquido: true }
+};
+
+function filterByPeriod(period){
+  if (period === 'ALL') return MONTHS.slice();
+  const map = { '1A':12, '3A':36, '5A':60 };
+  const n = map[period] || MONTHS.length;
+  return MONTHS.slice(-n);
+}
+
+function renderFundingChart(){
+  const months = filterByPeriod(fundingState.period);
+  const data = fundingMonthly.filter(d => months.includes(d.ym));
+  const labels = data.map(d => ymLabel(d.ym));
+
+  const datasets = [];
+  if (fundingState.series.arrecadacao){
+    datasets.push({
+      type: 'bar', label: 'Arrecadação', backgroundColor: '#57B49A',
+      data: data.map(d => d.arrecadacao), yAxisID: 'y', order: 2
+    });
+  }
+  if (fundingState.series.saques){
+    datasets.push({
+      type: 'bar', label: 'Saques', backgroundColor: '#FF6200',
+      data: data.map(d => -d.saques), yAxisID: 'y', order: 2
+    });
+  }
+  if (fundingState.series.liquido){
+    datasets.push({
+      type: 'line', label: 'Captação líquida', borderColor: '#000000',
+      backgroundColor: '#000000', data: data.map(d => d.liquido),
+      borderWidth: 2.2, pointRadius: 0, pointHoverRadius: 4, tension: 0.25,
+      yAxisID: 'y', order: 1
+    });
+  }
+
+  if (fundingChart) fundingChart.destroy();
+  fundingChart = new Chart(document.getElementById('funding-chart'), {
+    type: 'bar',
+    data: { labels, datasets },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: (ctx) => {
+              const val = Math.abs(ctx.parsed.y);
+              return `${ctx.dataset.label}: R$ ${fmtBR(val, 1)} bi`;
+            }
+          }
+        }
+      },
+      scales: {
+        x: { grid: { display: false }, ticks: { font: { family: 'Arial', size: 10 }, maxRotation: 0, autoSkip: true, maxTicksLimit: 14 } },
+        y: {
+          grid: { color: '#ececec' },
+          ticks: { font: { family: 'Arial', size: 10 }, callback: v => 'R$ ' + fmtBR(v, 0) + ' bi' },
+          title: { display: true, text: 'R$ bilhões (saques em negativo)', font: { family: 'Arial', size: 10 }, color: '#6b6b6b' }
+        }
+      }
+    }
+  });
+}
+
+document.querySelectorAll('[data-funding-period]').forEach(chip => {
+  chip.addEventListener('click', () => {
+    document.querySelectorAll('[data-funding-period]').forEach(c => c.classList.remove('active'));
+    chip.classList.add('active');
+    fundingState.period = chip.dataset.fundingPeriod;
+    renderFundingChart();
+  });
+});
+document.querySelectorAll('[data-funding-series]').forEach(chip => {
+  chip.addEventListener('click', () => {
+    const k = chip.dataset.fundingSeries;
+    fundingState.series[k] = !fundingState.series[k];
+    chip.classList.toggle('off', !fundingState.series[k]);
+    chip.classList.toggle('active', fundingState.series[k]);
+    renderFundingChart();
+  });
+});
+
+/* =========================================================================
+   GRÁFICO 2 — Empilhado por faixa MCMV com filtro de geografia
+   ========================================================================= */
+let stackChart;
+const stackState = {
+  period: '3A',
+  geo: 'BR',
+  series: { faixa_1: true, faixa_2: true, faixa_3: true, faixa_4: true, fora_mcmv: true }
+};
+
+function resolveUFs(geo){
+  if (geo === 'BR') return ALL_UFS;
+  if (geo.startsWith('REG:')) return fgtsData.ufs_by_region[geo.slice(4)] || [];
+  if (geo.startsWith('UF:'))  return [geo.slice(3)];
+  return ALL_UFS;
+}
+function geoLabel(geo){
+  if (geo === 'BR') return 'Brasil (consolidado)';
+  if (geo.startsWith('REG:')) return 'Região ' + geo.slice(4).split('-').map(s => s.charAt(0)+s.slice(1).toLowerCase()).join('-');
+  if (geo.startsWith('UF:')) return UF_FULLNAME[geo.slice(3)];
+  return geo;
+}
+
+function renderStackChart(){
+  const months = filterByPeriod(stackState.period);
+  const ufs = resolveUFs(stackState.geo);
+  const labels = months.map(ymLabel);
+
+  const datasets = FAIXAS.filter(f => stackState.series[f.key]).map(faixa => {
+    const data = months.map(ym => {
+      let total = 0;
+      ufs.forEach(uf => {
+        const v = (faixaData[faixa.key][uf] || {})[ym];
+        if (v != null) total += v;
+      });
+      return total;
+    });
+    return {
+      label: faixa.label, data, backgroundColor: faixa.color, borderColor: faixa.color,
+      borderWidth: 0, stack: 's1'
+    };
+  });
+
+  if (stackChart) stackChart.destroy();
+  stackChart = new Chart(document.getElementById('stack-chart'), {
+    type: 'bar',
+    data: { labels, datasets },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            title: items => items[0]?.label + ' · ' + geoLabel(stackState.geo),
+            label: ctx => `${ctx.dataset.label}: R$ ${fmtBR(ctx.parsed.y, 1)} mi`,
+            footer: items => {
+              const total = items.reduce((a,b) => a + b.parsed.y, 0);
+              return 'Total: R$ ' + fmtBR(total, 1) + ' mi';
+            }
+          }
+        }
+      },
+      scales: {
+        x: { stacked: true, grid: { display: false }, ticks: { font: { family: 'Arial', size: 10 }, maxRotation: 0, autoSkip: true, maxTicksLimit: 14 } },
+        y: { stacked: true, grid: { color: '#ececec' },
+             ticks: { font: { family: 'Arial', size: 10 }, callback: v => 'R$ ' + fmtBR(v, 0) + ' mi' } }
+      }
+    }
+  });
+}
+
+document.querySelectorAll('[data-stack-period]').forEach(chip => {
+  chip.addEventListener('click', () => {
+    document.querySelectorAll('[data-stack-period]').forEach(c => c.classList.remove('active'));
+    chip.classList.add('active');
+    stackState.period = chip.dataset.stackPeriod;
+    renderStackChart();
+  });
+});
+document.getElementById('stack-geo').addEventListener('change', e => {
+  stackState.geo = e.target.value;
+  renderStackChart();
+});
+document.querySelectorAll('[data-stack-series]').forEach(chip => {
+  chip.addEventListener('click', () => {
+    const k = chip.dataset.stackSeries;
+    stackState.series[k] = !stackState.series[k];
+    chip.classList.toggle('off', !stackState.series[k]);
+    chip.classList.toggle('active', stackState.series[k]);
+    renderStackChart();
+  });
+});
+
+/* =========================================================================
+   GRÁFICO 3 — Top 10 UFs por originação YTD
+   ========================================================================= */
+let topUfChart;
+
+function renderTopUfChart(refYM){
+  const [yStr, mStr] = refYM.split('-');
+  const year = parseInt(yStr,10), month = parseInt(mStr,10);
+  const prevYear = year - 1;
+
+  const ufTotals = ALL_UFS.map(uf => {
+    let cur = 0, prev = 0;
+    MODALITIES.forEach(mod => {
+      cur  += ytdSum(mod.key, uf, year, month).sum;
+      prev += ytdSum(mod.key, uf, prevYear, month).sum;
+    });
+    const yoy = prev > 0 ? ((cur - prev) / prev) * 100 : null;
+    return { uf, name: UF_FULLNAME[uf], cur, prev, yoy };
+  }).sort((a,b) => b.cur - a.cur).slice(0, 10);
+
+  const labels = ufTotals.map(d => `${d.uf} — ${d.name}`);
+  const data = ufTotals.map(d => d.cur);
+  const bgColors = ufTotals.map(d => (d.yoy != null && d.yoy >= 0) ? '#57B49A' : '#FF6200');
+
+  if (topUfChart) topUfChart.destroy();
+  topUfChart = new Chart(document.getElementById('top-uf-chart'), {
+    type: 'bar',
+    data: { labels, datasets: [{ data, backgroundColor: bgColors, borderRadius: 4 }] },
+    options: {
+      indexAxis: 'y',
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: ctx => {
+              const d = ufTotals[ctx.dataIndex];
+              return [
+                `Originação YTD: R$ ${fmtBR(d.cur, 1)} mi`,
+                `Ano anterior:   R$ ${fmtBR(d.prev, 1)} mi`,
+                `Variação a/a:   ${fmtPct(d.yoy)}`
+              ];
+            }
+          }
+        }
+      },
+      scales: {
+        x: { grid: { color: '#ececec' },
+             ticks: { font: { family: 'Arial', size: 10 }, callback: v => 'R$ ' + fmtBR(v, 0) + ' mi' } },
+        y: { grid: { display: false }, ticks: { font: { family: 'Arial', size: 11 } } }
+      }
+    }
+  });
+}
+
+document.getElementById('top-ref').addEventListener('change', e => {
+  renderTopUfChart(e.target.value);
+});
+
+/* =========================================================================
+   GRÁFICO 4 — Heatmap regional × modalidade
+   ========================================================================= */
+function colorScale(value, max){
+  if (max === 0) return '#ffffff';
+  const t = Math.min(1, value / max);
+  // Branco -> laranja (FF6200)
+  const r = Math.round(255 + (255 - 255) * t);
+  const g = Math.round(255 + (98 - 255) * t);
+  const b = Math.round(255 + (0  - 255) * t);
+  return `rgb(${r},${g},${b})`;
+}
+function contrastText(value, max){
+  const t = max > 0 ? value/max : 0;
+  return t > 0.55 ? '#ffffff' : '#1a1a1a';
+}
+
+function renderHeatmap(refYM){
+  const [yStr, mStr] = refYM.split('-');
+  const year = parseInt(yStr,10), month = parseInt(mStr,10);
+  const regions = fgtsData.regions_order;
+
+  // Calcula matriz [região][modalidade]
+  const matrix = {};
+  const regionTotals = {};
+  let maxCell = 0;
+
+  regions.forEach(reg => {
+    matrix[reg] = {};
+    let regTotal = 0;
+    MODALITIES.forEach(mod => {
+      let sum = 0;
+      fgtsData.ufs_by_region[reg].forEach(uf => {
+        sum += ytdSum(mod.key, uf, year, month).sum;
+      });
+      matrix[reg][mod.key] = sum;
+      regTotal += sum;
+      if (sum > maxCell) maxCell = sum;
+    });
+    regionTotals[reg] = regTotal;
+  });
+
+  // Totais por modalidade (rodapé)
+  const modTotals = {};
+  let grandTotal = 0;
+  MODALITIES.forEach(mod => {
+    modTotals[mod.key] = regions.reduce((a,r) => a + matrix[r][mod.key], 0);
+    grandTotal += modTotals[mod.key];
+  });
+
+  // Constrói tabela HTML
+  const table = document.getElementById('heatmap-table');
+  let html = '<thead><tr><th class="row-label">Região</th>';
+  MODALITIES.forEach(mod => { html += `<th>${mod.short}</th>`; });
+  html += '<th>Total</th></tr></thead><tbody>';
+
+  regions.forEach(reg => {
+    html += `<tr><td class="row-label">${reg.charAt(0)+reg.slice(1).toLowerCase()}</td>`;
+    MODALITIES.forEach(mod => {
+      const v = matrix[reg][mod.key];
+      const share = regionTotals[reg] > 0 ? (v / regionTotals[reg]) * 100 : 0;
+      html += `<td style="background:${colorScale(v, maxCell)}; color:${contrastText(v, maxCell)};">
+        <span class="heatmap-cell-value">${fmtBR(v, 0)}</span>
+        <span class="heatmap-cell-share">${fmtBR(share, 1)}%</span>
+      </td>`;
+    });
+    html += `<td class="total">${fmtBR(regionTotals[reg], 0)}</td></tr>`;
+  });
+
+  // Linha de total
+  html += `<tr><td class="row-label" style="background:#1a1a1a;color:#fff;">Brasil</td>`;
+  MODALITIES.forEach(mod => {
+    const share = grandTotal > 0 ? (modTotals[mod.key] / grandTotal) * 100 : 0;
+    html += `<td class="total">
+      <span class="heatmap-cell-value">${fmtBR(modTotals[mod.key], 0)}</span>
+      <span class="heatmap-cell-share">${fmtBR(share, 1)}%</span>
+    </td>`;
+  });
+  html += `<td class="total" style="background:#FF6200;">${fmtBR(grandTotal, 0)}</td></tr>`;
+  html += '</tbody>';
+  table.innerHTML = html;
+}
+
+document.getElementById('heat-ref').addEventListener('change', e => {
+  renderHeatmap(e.target.value);
+});
+
+/* =========================================================================
+   TABELA 1 — Originação por UF (mantida, ligeiramente refatorada)
+   ========================================================================= */
+function renderFgtsTable(refYM){
+  const wrap = document.getElementById('fgts-table-wrap');
+  const [yStr, mStr] = refYM.split('-');
+  const year = parseInt(yStr,10), month = parseInt(mStr,10);
+  const prevYear = year - 1;
+  const monthLabels = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+  const windowLabel = 'Jan–' + monthLabels[month-1];
+  const periodLabel = month + 'M' + String(year).slice(2);
+
+  function rowData(uf){
+    return MODALITIES.map(mod => {
+      const cur  = ytdSum(mod.key, uf, year, month);
+      const prev = ytdSum(mod.key, uf, prevYear, month);
+      let yoy = null;
+      if (prev.hasData && prev.sum > 0) yoy = ((cur.sum - prev.sum) / prev.sum) * 100;
+      return { value: cur.hasData ? cur.sum : null, yoy };
+    });
+  }
+
+  let html = `<table class="fgts-table">
+    <colgroup>
+      <col class="col-region">
+      ${MODALITIES.map(()=>'<col><col>').join('')}
+    </colgroup>
+    <thead>
+      <tr>
+        <th rowspan="3" class="col-group" style="text-align:left;padding-left:14px;">Região / UF</th>
+        ${MODALITIES.map(m => `<th colspan="2" class="col-group">${m.short}</th>`).join('')}
+      </tr>
+      <tr>
+        ${MODALITIES.map(m => `<th colspan="2" class="col-name">${m.label}</th>`).join('')}
+      </tr>
+      <tr>
+        ${MODALITIES.map(() => `<th class="col-sub">${windowLabel}/${String(year).slice(2)}</th><th class="col-sub">y/y</th>`).join('')}
+      </tr>
+    </thead><tbody>`;
+
+  let totals = MODALITIES.map(() => ({ cur:0, prev:0 }));
+
+  fgtsData.regions_order.forEach(reg => {
+    let regTotals = MODALITIES.map(() => ({ cur:0, prev:0, hasData:false }));
+    fgtsData.ufs_by_region[reg].forEach(uf => {
+      MODALITIES.forEach((m, i) => {
+        const c = ytdSum(m.key, uf, year, month);
+        const p = ytdSum(m.key, uf, prevYear, month);
+        if (c.hasData) { regTotals[i].cur += c.sum; totals[i].cur += c.sum; regTotals[i].hasData = true; }
+        if (p.hasData) { regTotals[i].prev += p.sum; totals[i].prev += p.sum; }
+      });
+    });
+
+    // Linha-cabeçalho da região
+    html += `<tr class="region-row"><td class="label">${reg}</td>`;
+    regTotals.forEach(t => {
+      const yoy = (t.prev > 0) ? ((t.cur - t.prev) / t.prev) * 100 : null;
+      html += `<td>${fmtBR(t.cur, 0)}</td>`;
+      html += `<td class="${yoy != null && yoy >= 0 ? 'yoy-pos' : 'yoy-neg'}">${fmtPct(yoy)}</td>`;
+    });
+    html += `</tr>`;
+
+    // UFs da região
+    fgtsData.ufs_by_region[reg].forEach(uf => {
+      html += `<tr class="uf-row"><td class="label">&nbsp;&nbsp;${uf} · ${UF_FULLNAME[uf]}</td>`;
+      rowData(uf).forEach(cell => {
+        html += `<td>${cell.value != null ? fmtBR(cell.value, 1) : '—'}</td>`;
+        html += `<td class="${cell.yoy != null && cell.yoy >= 0 ? 'yoy-pos' : 'yoy-neg'}">${fmtPct(cell.yoy)}</td>`;
+      });
+      html += `</tr>`;
+    });
+  });
+
+  // Linha total Brasil
+  html += `<tr class="total-row"><td class="label">BRASIL · TOTAL ${periodLabel}</td>`;
+  totals.forEach(t => {
+    const yoy = (t.prev > 0) ? ((t.cur - t.prev) / t.prev) * 100 : null;
+    html += `<td>${fmtBR(t.cur, 0)}</td>`;
+    html += `<td class="${yoy != null && yoy >= 0 ? 'yoy-pos' : 'yoy-neg'}">${fmtPct(yoy)}</td>`;
+  });
+  html += `</tr>`;
+  html += `</tbody></table>`;
+  wrap.innerHTML = html;
+}
+
+document.getElementById('fgts-ref').addEventListener('change', e => {
+  renderFgtsTable(e.target.value);
+});
+
+/* =========================================================================
+   BOOT
+   ========================================================================= */
+renderFundingChart();
+renderStackChart();
+renderTopUfChart('2026-04');
+renderHeatmap('2026-04');
+renderFgtsTable('2026-04');
+</script>
+</div><!-- /app -->
+</body>
+</html>
