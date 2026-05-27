@@ -261,6 +261,10 @@
   .heatmap-cell-value { display: block; font-size: 12px; }
   .heatmap-cell-share { display: block; font-size: 10px; font-weight: 400; opacity: 0.75; margin-top: 2px; }
 
+  /* ---- Multi-página ---- */
+  .page { display: none; }
+  .page.active { display: block; }
+  /* Tabela FGTS legada já está definida acima */
 </style>
 </head>
 <body>
@@ -322,10 +326,8 @@
 <div id="app" style="display:none">
 
 <script>
-  // Cliente Supabase
   const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
 
-  // Usuario "publico" da tela -> email real no Supabase
   const LOGIN_TO_EMAIL = {
     "ibba": "admin@fenabrave.local"
   };
@@ -394,10 +396,10 @@
 <div class="layout">
   <aside>
     <div class="nav-section">Macro &amp; Setorial</div>
-    <a class="nav-item active" href="#">Residencial</a>
-    <a class="nav-sub" href="#incc">INCC</a>
-    <a class="nav-sub" href="#sbpe">SBPE</a>
-    <a class="nav-sub active" href="#fgts">FGTS</a>
+    <a class="nav-item active" data-section="residencial" href="#">Residencial</a>
+    <a class="nav-sub" data-page="incc" href="#incc">INCC</a>
+    <a class="nav-sub" data-page="sbpe" href="#sbpe">SBPE</a>
+    <a class="nav-sub active" data-page="fgts" href="#fgts">FGTS</a>
     <a class="nav-sub soon">Secovi</a>
     <a class="nav-item" href="#">Comercial</a>
 
@@ -412,7 +414,386 @@
 
   <main>
 
-    <div class="crumbs">Macro &amp; Setorial <span>›</span> Residencial <span>›</span> <span class="current">FGTS</span></div>
+<div class="page" id="page-incc">
+    <div class="crumbs">Macro & Setorial <span>›</span> Residencial <span>›</span> <span class="current">INCC</span></div>
+    <div class="page-head">
+      <div>
+        <h2>INCC — Índice Nacional de Custo da Construção</h2>
+        <p class="subtitle">Custos de construção residencial, composição e sistemas construtivos · Atualizado em 14/05/2026</p>
+      </div>
+      <button class="btn-download" onclick="downloadCSV('incc')" title="Baixar a base de dados em CSV">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+          <polyline points="7 10 12 15 17 10"></polyline>
+          <line x1="12" y1="15" x2="12" y2="3"></line>
+        </svg>
+        Baixar base (CSV)
+      </button>
+    </div>
+
+    <div class="kpi-grid">
+      <div class="kpi primary">
+        <div class="kpi-header">
+          <div class="kpi-label">INCC y/y</div>
+          <div class="kpi-ref">abr/26</div>
+        </div>
+        <div class="kpi-value">6.28%</div>
+        <div class="kpi-foot">vs. 5.81% em mar/26</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-header">
+          <div class="kpi-label">Mão de Obra y/y</div>
+          <div class="kpi-ref">abr/26</div>
+        </div>
+        <div class="kpi-value">8.70%</div>
+        <div class="kpi-foot">vs. 9.03% em mar/26</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-header">
+          <div class="kpi-label">Materiais & Serviços y/y</div>
+          <div class="kpi-ref">abr/26</div>
+        </div>
+        <div class="kpi-value">4.63%</div>
+        <div class="kpi-foot">vs. 3.62% em mar/26</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-header">
+          <div class="kpi-label">Alvenaria y/y</div>
+          <div class="kpi-ref">abr/26</div>
+        </div>
+        <div class="kpi-value">6.83%</div>
+        <div class="kpi-foot">vs. 6.53% em mar/26</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-header">
+          <div class="kpi-label">Fôrmas de Alumínio y/y</div>
+          <div class="kpi-ref">abr/26</div>
+        </div>
+        <div class="kpi-value">5.89%</div>
+        <div class="kpi-foot">vs. 5.29% em mar/26</div>
+      </div>
+    </div>
+
+    <div class="card" id="chart1">
+      <div class="card-head">
+        <h3>Gráfico 1 — INCC vs. Composição (Mão de Obra e Materiais & Serviços) ao longo do tempo</h3>
+        <div class="chart-actions">
+          <span class="chart-actions-label">Baixar:</span>
+          <button class="btn-size" onclick="downloadChartImage('c1','Grande')" title="22 cm × 6 cm">Grande</button>
+          <button class="btn-size" onclick="downloadChartImage('c1','Medio')" title="16 cm × 6 cm">Médio</button>
+          <button class="btn-size" onclick="downloadChartImage('c1','Pequeno')" title="11 cm × 6 cm">Pequeno</button>
+        </div>
+      </div>
+      <div class="card-sub">Variação a/a (%) · Fonte: FGV (INCC-M)</div>
+      <div class="chart-filters" data-chart-filter="c1">
+        <div class="filter-group">
+          <span class="filter-label">Período:</span>
+          <button class="filter-chip" data-period="12">1A</button>
+          <button class="filter-chip" data-period="36">3A</button>
+          <button class="filter-chip" data-period="60">5A</button>
+          <button class="filter-chip" data-period="120">10A</button>
+          <button class="filter-chip active" data-period="all">Tudo</button>
+          <span class="filter-sep">·</span>
+          <span class="filter-label">De</span>
+          <input type="month" data-custom="from" min="2015-01" max="2026-04">
+          <span class="filter-label">Até</span>
+          <input type="month" data-custom="to" min="2015-01" max="2026-04">
+        </div>
+        <div class="filter-group">
+          <span class="filter-label">Séries:</span>
+          <button class="filter-chip series-chip" data-series="0" style="--chip-color:#FF6200">INCC</button>
+          <button class="filter-chip series-chip" data-series="1" style="--chip-color:#000000">Labor</button>
+          <button class="filter-chip series-chip" data-series="2" style="--chip-color:#FFB600">Materials &amp; Services</button>
+        </div>
+      </div>
+      <div class="chart-wrap"><canvas id="c1"></canvas></div>
+      <div class="legend-note">Separa a pressão de custos entre <strong>fator trabalho</strong> e <strong>materiais</strong> — relevante para entender margem bruta das incorporadoras.</div>
+    </div>
+
+    <div class="card" id="chart-snapshot">
+      <div class="card-head">
+        <h3>Gráfico 2 — Snapshot Comparativo (INCC, Materiais & Serviços e Mão de Obra)</h3>
+        <div class="chart-actions">
+          <span class="chart-actions-label">Baixar:</span>
+          <button class="btn-size" onclick="downloadChartImage('c3','Grande')" title="22 cm × 6 cm">Grande</button>
+          <button class="btn-size" onclick="downloadChartImage('c3','Medio')" title="16 cm × 6 cm">Médio</button>
+          <button class="btn-size" onclick="downloadChartImage('c3','Pequeno')" title="11 cm × 6 cm">Pequeno</button>
+        </div>
+      </div>
+      <div class="card-sub">Variação a/a (%) · Mês de referência vs. mês anterior vs. 12 meses antes · Fonte: FGV (INCC-M)</div>
+      <div class="chart-filters" data-chart-filter="c3">
+        <div class="filter-group">
+          <span class="filter-label">Mês de referência:</span>
+          <input type="month" data-refmonth value="2026-04" min="2016-01" max="2026-04">
+          <span class="filter-hint">compara com o mês anterior e com 12 meses antes</span>
+        </div>
+      </div>
+      <div class="chart-wrap"><canvas id="c3"></canvas></div>
+      <div class="legend-note">Compara o nível atual ao mês imediatamente anterior e ao mesmo mês do ano passado — útil para visualizar a <strong>inflexão recente</strong> e a base comparativa a/a em cada componente.</div>
+    </div>
+
+    <div class="card" id="chart2">
+      <div class="card-head">
+        <h3>Gráfico 3 — INCC vs. Sistemas Construtivos (Alvenaria e Fôrmas de Alumínio)</h3>
+        <div class="chart-actions">
+          <span class="chart-actions-label">Baixar:</span>
+          <button class="btn-size" onclick="downloadChartImage('c2','Grande')" title="22 cm × 6 cm">Grande</button>
+          <button class="btn-size" onclick="downloadChartImage('c2','Medio')" title="16 cm × 6 cm">Médio</button>
+          <button class="btn-size" onclick="downloadChartImage('c2','Pequeno')" title="11 cm × 6 cm">Pequeno</button>
+        </div>
+      </div>
+      <div class="card-sub">Variação a/a (%) · Fonte: FGV (INCC-M)</div>
+      <div class="chart-filters" data-chart-filter="c2">
+        <div class="filter-group">
+          <span class="filter-label">Período:</span>
+          <button class="filter-chip" data-period="12">1A</button>
+          <button class="filter-chip" data-period="36">3A</button>
+          <button class="filter-chip" data-period="60">5A</button>
+          <button class="filter-chip" data-period="120">10A</button>
+          <button class="filter-chip active" data-period="all">Tudo</button>
+          <span class="filter-sep">·</span>
+          <span class="filter-label">De</span>
+          <input type="month" data-custom="from" min="2015-01" max="2026-04">
+          <span class="filter-label">Até</span>
+          <input type="month" data-custom="to" min="2015-01" max="2026-04">
+        </div>
+        <div class="filter-group">
+          <span class="filter-label">Séries:</span>
+          <button class="filter-chip series-chip" data-series="0" style="--chip-color:#FF6200">INCC</button>
+          <button class="filter-chip series-chip" data-series="1" style="--chip-color:#000000">Masonry</button>
+          <button class="filter-chip series-chip" data-series="2" style="--chip-color:#FFB600">Aluminum Molds</button>
+        </div>
+      </div>
+      <div class="chart-wrap"><canvas id="c2"></canvas></div>
+      <div class="legend-note">Compara o INCC geral com dois sistemas construtivos típicos — útil para diferenciar as companhias de <strong>baixa renda:</strong> DIRR, MRVE e TEND usam fôrmas de alumínio e CURY e PLPL usam alvenaria.</div>
+    </div>
+
+    <div class="card" id="chart-snapshot-sistemas">
+      <div class="card-head">
+        <h3>Gráfico 4 — Snapshot Comparativo (INCC, Alvenaria e Fôrmas de Alumínio)</h3>
+        <div class="chart-actions">
+          <span class="chart-actions-label">Baixar:</span>
+          <button class="btn-size" onclick="downloadChartImage('c4','Grande')" title="22 cm × 6 cm">Grande</button>
+          <button class="btn-size" onclick="downloadChartImage('c4','Medio')" title="16 cm × 6 cm">Médio</button>
+          <button class="btn-size" onclick="downloadChartImage('c4','Pequeno')" title="11 cm × 6 cm">Pequeno</button>
+        </div>
+      </div>
+      <div class="card-sub">Variação a/a (%) · Mês de referência vs. mês anterior vs. 12 meses antes · Fonte: FGV (INCC-M)</div>
+      <div class="chart-filters" data-chart-filter="c4">
+        <div class="filter-group">
+          <span class="filter-label">Mês de referência:</span>
+          <input type="month" data-refmonth value="2026-04" min="2016-01" max="2026-04">
+          <span class="filter-hint">compara com o mês anterior e com 12 meses antes</span>
+        </div>
+      </div>
+      <div class="chart-wrap"><canvas id="c4"></canvas></div>
+      <div class="legend-note">Compara o nível atual ao mês imediatamente anterior e ao mesmo mês do ano passado nos <strong>sistemas construtivos</strong> — base para diferenciar as companhias de baixa renda que usam alvenaria das que usam fôrmas de alumínio.</div>
+    </div>
+
+    <footer>
+      <div><strong>Fonte:</strong> FGV · Base proprietária Itaú BBA Equity Research</div>
+      <div><strong>Periodicidade:</strong> mensal · <strong>Próxima atualização:</strong> com nova base mensal do INCC-M</div>
+    </footer>
+  </div>
+
+<div class="page" id="page-sbpe">
+    <div class="crumbs">Macro & Setorial <span>›</span> Residencial <span>›</span> <span class="current">SBPE</span></div>
+    <div class="page-head">
+      <div>
+        <h2>SBPE — Sistema Brasileiro de Poupança e Empréstimo</h2>
+        <p class="subtitle">Captação de poupança SBPE — principal fonte de funding do crédito imobiliário residencial · Atualizado em 14/05/2026</p>
+      </div>
+      <button class="btn-download" onclick="downloadCSV('sbpe')" title="Baixar a base de dados em CSV">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+          <polyline points="7 10 12 15 17 10"></polyline>
+          <line x1="12" y1="15" x2="12" y2="3"></line>
+        </svg>
+        Baixar base (CSV)
+      </button>
+    </div>
+
+    <div class="kpi-grid">
+      <div class="kpi primary">
+        <div class="kpi-header">
+          <div class="kpi-label">Captação líquida LTM (R$ bi)</div>
+          <div class="kpi-ref">abr/26</div>
+        </div>
+        <div class="kpi-value">-55.50</div>
+        <div class="kpi-foot">vs. -60.34 em mar/26</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-header">
+          <div class="kpi-label">Captação líquida mensal (R$ bi)</div>
+          <div class="kpi-ref">abr/26</div>
+        </div>
+        <div class="kpi-value">+0.50</div>
+        <div class="kpi-foot">vs. -9.09 em mar/26</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-header">
+          <div class="kpi-label">Saldo final (R$ bi)</div>
+          <div class="kpi-ref">abr/26</div>
+        </div>
+        <div class="kpi-value">+753.8</div>
+        <div class="kpi-foot">vs. +748.6 em mar/26</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-header">
+          <div class="kpi-label">Depósitos mensais (R$ bi)</div>
+          <div class="kpi-ref">abr/26</div>
+        </div>
+        <div class="kpi-value">+314.0</div>
+        <div class="kpi-foot">vs. +320.4 em mar/26</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-header">
+          <div class="kpi-label">Saques mensais (R$ bi)</div>
+          <div class="kpi-ref">abr/26</div>
+        </div>
+        <div class="kpi-value">+313.5</div>
+        <div class="kpi-foot">vs. +329.4 em mar/26</div>
+      </div>
+    </div>
+
+    <div class="card" id="chart-sbpe-ltm">
+      <div class="card-head">
+        <h3>Gráfico 1 — Captação Líquida LTM (R$ bi)</h3>
+        <div class="chart-actions">
+          <span class="chart-actions-label">Baixar:</span>
+          <button class="btn-size" onclick="downloadChartImage('c5','Grande')" title="22 cm × 6 cm">Grande</button>
+          <button class="btn-size" onclick="downloadChartImage('c5','Medio')" title="16 cm × 6 cm">Médio</button>
+          <button class="btn-size" onclick="downloadChartImage('c5','Pequeno')" title="11 cm × 6 cm">Pequeno</button>
+        </div>
+      </div>
+      <div class="card-sub">Soma móvel de 12 meses dos depósitos líquidos · Fonte: BCB (SBPE)</div>
+      <div class="chart-filters" data-chart-filter="c5">
+        <div class="filter-group">
+          <span class="filter-label">Período:</span>
+          <button class="filter-chip" data-period="12">1A</button>
+          <button class="filter-chip" data-period="36">3A</button>
+          <button class="filter-chip" data-period="60">5A</button>
+          <button class="filter-chip" data-period="120">10A</button>
+          <button class="filter-chip active" data-period="all">Tudo</button>
+          <span class="filter-sep">·</span>
+          <span class="filter-label">De</span>
+          <input type="month" data-custom="from" min="2015-01" max="2026-04">
+          <span class="filter-label">Até</span>
+          <input type="month" data-custom="to" min="2015-01" max="2026-04">
+        </div>
+      </div>
+      <div class="chart-wrap"><canvas id="c5"></canvas></div>
+      <div class="legend-note">Indicador <strong>headline</strong> de funding do crédito imobiliário — quando fica negativo, bancos enfrentam menos disponibilidade de captação barata pra financiamento residencial.</div>
+    </div>
+
+    <div class="card" id="chart-sbpe-monthly">
+      <div class="card-head">
+        <h3>Gráfico 2 — Captação Líquida Mensal (R$ bi)</h3>
+        <div class="chart-actions">
+          <span class="chart-actions-label">Baixar:</span>
+          <button class="btn-size" onclick="downloadChartImage('c6','Grande')" title="22 cm × 6 cm">Grande</button>
+          <button class="btn-size" onclick="downloadChartImage('c6','Medio')" title="16 cm × 6 cm">Médio</button>
+          <button class="btn-size" onclick="downloadChartImage('c6','Pequeno')" title="11 cm × 6 cm">Pequeno</button>
+        </div>
+      </div>
+      <div class="card-sub">Depósitos menos saques por mês · Fonte: BCB (SBPE)</div>
+      <div class="chart-filters" data-chart-filter="c6">
+        <div class="filter-group">
+          <span class="filter-label">Período:</span>
+          <button class="filter-chip active" data-period="12">12m</button>
+          <button class="filter-chip" data-period="24">24m</button>
+          <button class="filter-chip" data-period="36">36m</button>
+          <button class="filter-chip" data-period="all">Tudo</button>
+        </div>
+      </div>
+      <div class="chart-wrap"><canvas id="c6"></canvas></div>
+      <div class="legend-note">Mostra a <strong>inflexão mensal</strong> de captação — barras verdes indicam entradas líquidas, barras laranja indicam resgates líquidos.</div>
+    </div>
+
+    <div class="card" id="chart-funding-stacked">
+      <div class="card-head">
+        <h3>Gráfico 3 — Composição de Funding Imobiliário (R$ bi) — Colunas Empilhadas</h3>
+        <div class="chart-actions">
+          <span class="chart-actions-label">Baixar:</span>
+          <button class="btn-size" onclick="downloadChartImage('c7','Grande')" title="22 cm × 6 cm">Grande</button>
+          <button class="btn-size" onclick="downloadChartImage('c7','Medio')" title="16 cm × 6 cm">Médio</button>
+          <button class="btn-size" onclick="downloadChartImage('c7','Pequeno')" title="11 cm × 6 cm">Pequeno</button>
+        </div>
+      </div>
+      <div class="card-sub">Saldo mensal por linha de funding · Fonte: BCB / CETIP / Abecip</div>
+      <div class="chart-filters" data-chart-filter="c7">
+        <div class="filter-group">
+          <span class="filter-label">Período:</span>
+          <button class="filter-chip" data-period="12">1A</button>
+          <button class="filter-chip" data-period="36">3A</button>
+          <button class="filter-chip" data-period="60">5A</button>
+          <button class="filter-chip" data-period="120">10A</button>
+          <button class="filter-chip active" data-period="all">Tudo</button>
+          <span class="filter-sep">·</span>
+          <span class="filter-label">De</span>
+          <input type="month" data-custom="from" min="2014-04" max="2025-07">
+          <span class="filter-label">Até</span>
+          <input type="month" data-custom="to" min="2014-04" max="2025-07">
+        </div>
+        <div class="filter-group">
+          <span class="filter-label">Séries:</span>
+          <button class="filter-chip series-chip" data-series="0" style="--chip-color:#FF6200">SBPE</button>
+          <button class="filter-chip series-chip" data-series="1" style="--chip-color:#000000">CRI</button>
+          <button class="filter-chip series-chip" data-series="2" style="--chip-color:#FFB600">LCI</button>
+          <button class="filter-chip series-chip" data-series="3" style="--chip-color:#57B49A">LH</button>
+          <button class="filter-chip series-chip" data-series="4" style="--chip-color:#A6CF2D">LIG</button>
+        </div>
+      </div>
+      <div class="chart-wrap"><canvas id="c7"></canvas></div>
+      <div class="legend-note">Compara o <strong>estoque mensal</strong> das principais linhas de funding habitacional — SBPE segue como base, mas <strong>CRI, LCI e LIG</strong> vêm ganhando peso na composição total.</div>
+    </div>
+
+    <div class="card" id="chart-funding-area">
+      <div class="card-head">
+        <h3>Gráfico 4 — Composição de Funding Imobiliário (%) — Área Empilhada 100%</h3>
+        <div class="chart-actions">
+          <span class="chart-actions-label">Baixar:</span>
+          <button class="btn-size" onclick="downloadChartImage('c8','Grande')" title="22 cm × 6 cm">Grande</button>
+          <button class="btn-size" onclick="downloadChartImage('c8','Medio')" title="16 cm × 6 cm">Médio</button>
+          <button class="btn-size" onclick="downloadChartImage('c8','Pequeno')" title="11 cm × 6 cm">Pequeno</button>
+        </div>
+      </div>
+      <div class="card-sub">Participação % de cada linha no funding total · Fonte: BCB / CETIP / Abecip</div>
+      <div class="chart-filters" data-chart-filter="c8">
+        <div class="filter-group">
+          <span class="filter-label">Período:</span>
+          <button class="filter-chip" data-period="12">1A</button>
+          <button class="filter-chip" data-period="36">3A</button>
+          <button class="filter-chip" data-period="60">5A</button>
+          <button class="filter-chip" data-period="120">10A</button>
+          <button class="filter-chip active" data-period="all">Tudo</button>
+          <span class="filter-sep">·</span>
+          <span class="filter-label">De</span>
+          <input type="month" data-custom="from" min="2014-04" max="2025-07">
+          <span class="filter-label">Até</span>
+          <input type="month" data-custom="to" min="2014-04" max="2025-07">
+        </div>
+        <div class="filter-group">
+          <span class="filter-label">Séries:</span>
+          <button class="filter-chip series-chip" data-series="0" style="--chip-color:#FF6200">SBPE</button>
+          <button class="filter-chip series-chip" data-series="1" style="--chip-color:#000000">CRI</button>
+          <button class="filter-chip series-chip" data-series="2" style="--chip-color:#FFB600">LCI</button>
+          <button class="filter-chip series-chip" data-series="3" style="--chip-color:#57B49A">LH</button>
+          <button class="filter-chip series-chip" data-series="4" style="--chip-color:#A6CF2D">LIG</button>
+        </div>
+      </div>
+      <div class="chart-wrap"><canvas id="c8"></canvas></div>
+      <div class="legend-note">Mostra a <strong>participação relativa</strong> de cada linha no funding total (soma = 100%) — útil pra enxergar a inflexão estrutural (perda de share do SBPE, ascensão de LCI e LIG). Ao desligar uma linha, as demais são reescaladas pra somar 100% entre si.</div>
+    </div>
+
+    <footer>
+      <div><strong>Fonte:</strong> Banco Central do Brasil (SBPE) / CETIP / Abecip · Base proprietária Itaú BBA Equity Research</div>
+      <div><strong>Periodicidade:</strong> mensal · <strong>Próxima atualização:</strong> com nova divulgação mensal do BCB</div>
+    </footer>
+  </div>
+
+<div class="page active" id="page-fgts">
+<div class="crumbs">Macro &amp; Setorial <span>›</span> Residencial <span>›</span> <span class="current">FGTS</span></div>
     <div class="page-head">
       <div>
         <h2>FGTS — Fundo de Garantia do Tempo de Serviço</h2>
@@ -626,11 +1007,719 @@
       <div><strong>Fonte:</strong> Caixa Econômica Federal (FGTS) · Relatório de Gestão FGTS · Base proprietária Itaú BBA Equity Research</div>
       <div><strong>Periodicidade:</strong> mensal · <strong>Defasagem típica:</strong> 30-45 dias · <strong>Próxima atualização:</strong> com nova divulgação mensal da Caixa</div>
     </footer>
+</div>
 
   </main>
 </div>
 
 <script>
+/* ============================================================
+   NAVEGAÇÃO ENTRE PÁGINAS
+   ============================================================ */
+document.querySelectorAll('.nav-sub[data-page]').forEach(link => {
+  link.addEventListener('click', e => {
+    e.preventDefault();
+    const pageId = 'page-' + link.dataset.page;
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.getElementById(pageId)?.classList.add('active');
+    document.querySelectorAll('.nav-sub[data-page]').forEach(l => l.classList.remove('active'));
+    link.classList.add('active');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+});
+
+// Suporte ao hash da URL (#incc, #sbpe, #fgts)
+function loadFromHash() {
+  const hash = window.location.hash.slice(1);
+  if (!hash) return;
+  const link = document.querySelector(`.nav-sub[data-page="${hash}"]`);
+  if (link) link.click();
+}
+window.addEventListener('hashchange', loadFromHash);
+window.addEventListener('DOMContentLoaded', loadFromHash);
+</script>
+
+<script>
+/* ============================================================
+   JS DAS PÁGINAS INCC + SBPE (vindo do protótipo)
+   ============================================================ */
+// ===== INCC data =====
+const inccLabels = ["2015-01-01", "2015-02-01", "2015-03-01", "2015-04-01", "2015-05-01", "2015-06-01", "2015-07-01", "2015-08-01", "2015-09-01", "2015-10-01", "2015-11-01", "2015-12-01", "2016-01-01", "2016-02-01", "2016-03-01", "2016-04-01", "2016-05-01", "2016-06-01", "2016-07-01", "2016-08-01", "2016-09-01", "2016-10-01", "2016-11-01", "2016-12-01", "2017-01-01", "2017-02-01", "2017-03-01", "2017-04-01", "2017-05-01", "2017-06-01", "2017-07-01", "2017-08-01", "2017-09-01", "2017-10-01", "2017-11-01", "2017-12-01", "2018-01-01", "2018-02-01", "2018-03-01", "2018-04-01", "2018-05-01", "2018-06-01", "2018-07-01", "2018-08-01", "2018-09-01", "2018-10-01", "2018-11-01", "2018-12-01", "2019-01-01", "2019-02-01", "2019-03-01", "2019-04-01", "2019-05-01", "2019-06-01", "2019-07-01", "2019-08-01", "2019-09-01", "2019-10-01", "2019-11-01", "2019-12-01", "2020-01-01", "2020-02-01", "2020-03-01", "2020-04-01", "2020-05-01", "2020-06-01", "2020-07-01", "2020-08-01", "2020-09-01", "2020-10-01", "2020-11-01", "2020-12-01", "2021-01-01", "2021-02-01", "2021-03-01", "2021-04-01", "2021-05-01", "2021-06-01", "2021-07-01", "2021-08-01", "2021-09-01", "2021-10-01", "2021-11-01", "2021-12-01", "2022-01-01", "2022-02-01", "2022-03-01", "2022-04-01", "2022-05-01", "2022-06-01", "2022-07-01", "2022-08-01", "2022-09-01", "2022-10-01", "2022-11-01", "2022-12-01", "2023-01-01", "2023-02-01", "2023-03-01", "2023-04-01", "2023-05-01", "2023-06-01", "2023-07-01", "2023-08-01", "2023-09-01", "2023-10-01", "2023-11-01", "2023-12-01", "2024-01-01", "2024-02-01", "2024-03-01", "2024-04-01", "2024-05-01", "2024-06-01", "2024-07-01", "2024-08-01", "2024-09-01", "2024-10-01", "2024-11-01", "2024-12-01", "2025-01-01", "2025-02-01", "2025-03-01", "2025-04-01", "2025-05-01", "2025-06-01", "2025-07-01", "2025-08-01", "2025-09-01", "2025-10-01", "2025-11-01", "2025-12-01", "2026-01-01", "2026-02-01", "2026-03-01", "2026-04-01"];
+const inccSeries = {
+  incc:  [6.74, 6.8, 6.95, 6.94, 5.97, 6.62, 6.48, 7.12, 7.19, 7.26, 7.36, 7.22, 6.82, 6.84, 7.3, 7.04, 6.77, 6.4, 6.85, 6.27, 6.44, 6.34, 6.09, 6.35, 6.32, 6.32, 5.87, 5.35, 5.29, 5.12, 4.22, 4.36, 4.13, 4.15, 4.26, 4.02, 4.01, 3.61, 3.47, 3.84, 4.03, 3.41, 3.93, 3.83, 3.86, 4.0, 3.98, 3.97, 4.09, 4.14, 4.11, 4.32, 4.09, 3.76, 3.95, 4.0, 4.45, 4.23, 4.12, 4.13, 3.99, 4.15, 4.34, 4.02, 4.14, 4.01, 3.95, 4.44, 5.01, 6.64, 7.86, 8.66, 9.39, 10.18, 11.95, 12.82, 14.62, 16.88, 17.35, 17.05, 16.37, 15.35, 14.69, 14.03, 13.7, 13.04, 11.63, 11.54, 11.2, 11.75, 11.66, 11.4, 10.89, 10.06, 9.44, 9.4, 9.05, 8.76, 8.17, 7.48, 6.32, 4.29, 3.15, 3.06, 3.21, 3.37, 3.33, 3.32, 3.23, 3.23, 3.29, 3.48, 3.68, 3.77, 4.42, 4.84, 5.23, 5.72, 6.08, 6.34, 6.85, 7.18, 7.32, 7.52, 7.17, 7.19, 7.43, 7.49, 7.07, 6.58, 6.41, 6.1, 6.01, 5.83, 5.81, 6.28],
+  labor: [7.7, 7.74, 8.06, 8.02, 5.95, 7.1, 7.09, 8.2, 8.2, 8.2, 7.96, 7.73, 7.06, 7.33, 8.24, 8.39, 8.48, 7.93, 8.82, 7.73, 8.32, 8.65, 9.04, 9.62, 9.76, 9.69, 8.92, 8.36, 8.31, 8.14, 6.48, 6.8, 6.18, 5.85, 5.47, 4.96, 4.7, 4.23, 3.77, 3.95, 3.83, 2.21, 2.35, 1.78, 1.82, 2.06, 2.06, 1.98, 2.39, 2.44, 2.44, 2.6, 2.45, 2.29, 3.43, 3.89, 4.87, 4.64, 4.64, 4.91, 4.56, 4.55, 4.97, 4.62, 4.61, 3.86, 3.14, 3.22, 2.31, 2.5, 2.75, 2.54, 3.08, 3.07, 2.94, 2.95, 3.97, 7.07, 7.28, 6.73, 6.95, 6.86, 6.9, 6.94, 6.44, 6.61, 7.51, 7.99, 8.46, 9.92, 10.62, 11.22, 11.21, 11.44, 11.72, 11.78, 12.49, 12.39, 11.44, 11.19, 10.44, 7.73, 6.27, 6.45, 6.68, 6.66, 6.55, 6.62, 6.25, 6.31, 6.27, 6.81, 7.13, 6.92, 7.42, 7.27, 7.44, 7.77, 7.9, 8.23, 8.99, 9.46, 9.59, 9.78, 9.42, 9.97, 10.12, 10.43, 10.32, 9.8, 9.45, 9.22, 9.11, 8.9, 9.03, 8.7],
+  mats:  [5.7, 5.8, 5.75, 5.77, 5.99, 6.09, 5.8, 5.92, 6.05, 6.2, 6.68, 6.64, 6.53, 6.28, 6.25, 5.55, 4.89, 4.67, 4.62, 4.61, 4.3, 3.74, 2.8, 2.72, 2.5, 2.59, 2.47, 1.99, 1.9, 1.66, 1.57, 1.51, 1.72, 2.14, 2.81, 2.88, 3.18, 2.87, 3.12, 3.72, 4.27, 4.89, 5.88, 6.36, 6.37, 6.39, 6.33, 6.4, 6.16, 6.2, 6.1, 6.39, 6.06, 5.52, 4.58, 4.14, 3.95, 3.75, 3.5, 3.2, 3.3, 3.66, 3.6, 3.3, 3.58, 4.16, 4.87, 5.87, 8.2, 11.55, 13.92, 15.93, 16.87, 18.53, 22.55, 24.39, 27.02, 28.25, 29.04, 28.93, 26.96, 24.6, 22.97, 21.43, 21.23, 19.58, 15.67, 14.95, 13.79, 13.51, 12.65, 11.58, 10.6, 8.79, 7.35, 7.23, 5.94, 5.49, 5.2, 4.15, 2.62, 1.11, 0.35, 0.14, 0.27, 0.62, 0.73, 0.63, 0.85, 0.76, 0.92, 0.87, 1.08, 1.64, 2.39, 3.17, 3.71, 4.31, 4.82, 5.04, 5.38, 5.61, 5.77, 5.97, 5.68, 5.33, 5.63, 5.52, 4.87, 4.4, 4.36, 3.99, 3.9, 3.75, 3.62, 4.63],
+  mason: [6.79, 6.85, 7.01, 6.99, 5.96, 6.65, 6.51, 7.18, 7.24, 7.3, 7.39, 7.24, 6.83, 6.86, 7.34, 7.11, 6.85, 6.47, 6.95, 6.35, 6.54, 6.46, 6.25, 6.53, 6.5, 6.51, 6.04, 5.52, 5.46, 5.29, 4.34, 4.5, 4.24, 4.24, 4.32, 4.07, 4.05, 3.65, 3.49, 3.85, 4.02, 3.35, 3.85, 3.71, 3.75, 3.9, 3.88, 3.87, 4.0, 4.05, 4.02, 4.23, 4.01, 3.68, 3.93, 4.0, 4.47, 4.25, 4.15, 4.17, 4.01, 4.16, 4.36, 4.04, 4.16, 4.0, 3.89, 4.37, 4.86, 6.42, 7.59, 8.34, 9.06, 9.8, 11.48, 12.31, 14.06, 16.37, 16.83, 16.51, 15.88, 14.91, 14.28, 13.66, 13.32, 12.71, 11.42, 11.35, 11.06, 11.66, 11.6, 11.39, 10.91, 10.13, 9.56, 9.53, 9.23, 8.95, 8.34, 7.68, 6.54, 4.48, 3.37, 3.37, 3.56, 3.73, 3.73, 3.72, 3.65, 3.63, 3.69, 3.95, 4.22, 4.41, 5.03, 5.33, 5.68, 6.14, 6.45, 6.73, 7.29, 7.65, 7.79, 7.99, 7.67, 7.82, 8.04, 8.15, 7.8, 7.3, 7.1, 6.8, 6.71, 6.53, 6.53, 6.83],
+  alum:  [6.33, 6.41, 6.48, 6.47, 5.97, 6.41, 6.21, 6.65, 6.74, 6.84, 7.09, 6.99, 6.7, 6.61, 6.88, 6.45, 6.02, 5.72, 5.98, 5.63, 5.6, 5.32, 4.8, 4.93, 4.82, 4.86, 4.54, 4.04, 3.97, 3.78, 3.2, 3.26, 3.2, 3.37, 3.7, 3.58, 3.69, 3.33, 3.34, 3.8, 4.12, 3.98, 4.67, 4.79, 4.81, 4.91, 4.88, 4.9, 4.88, 4.93, 4.87, 5.12, 4.85, 4.44, 4.2, 4.06, 4.25, 4.05, 3.88, 3.77, 3.71, 3.95, 4.05, 3.73, 3.91, 4.07, 4.3, 4.99, 6.23, 8.53, 10.2, 11.47, 12.28, 13.41, 16.06, 17.31, 19.43, 21.31, 21.9, 21.68, 20.52, 19.01, 17.98, 16.99, 16.72, 15.68, 13.27, 12.93, 12.26, 12.47, 12.06, 11.48, 10.77, 9.54, 8.57, 8.5, 7.77, 7.4, 6.94, 6.1, 4.79, 2.98, 2.04, 1.94, 2.11, 2.36, 2.41, 2.36, 2.42, 2.37, 2.48, 2.6, 2.85, 3.2, 3.89, 4.4, 4.83, 5.35, 5.75, 6.0, 6.47, 6.77, 6.92, 7.12, 6.82, 6.75, 7.01, 7.03, 6.54, 6.06, 5.92, 5.6, 5.51, 5.34, 5.29, 5.89],
+};
+
+// ===== SBPE data =====
+const sbpeLabels = ["2015-01-01", "2015-02-01", "2015-03-01", "2015-04-01", "2015-05-01", "2015-06-01", "2015-07-01", "2015-08-01", "2015-09-01", "2015-10-01", "2015-11-01", "2015-12-01", "2016-01-01", "2016-02-01", "2016-03-01", "2016-04-01", "2016-05-01", "2016-06-01", "2016-07-01", "2016-08-01", "2016-09-01", "2016-10-01", "2016-11-01", "2016-12-01", "2017-01-01", "2017-02-01", "2017-03-01", "2017-04-01", "2017-05-01", "2017-06-01", "2017-07-01", "2017-08-01", "2017-09-01", "2017-10-01", "2017-11-01", "2017-12-01", "2018-01-01", "2018-02-01", "2018-03-01", "2018-04-01", "2018-05-01", "2018-06-01", "2018-07-01", "2018-08-01", "2018-09-01", "2018-10-01", "2018-11-01", "2018-12-01", "2019-01-01", "2019-02-01", "2019-03-01", "2019-04-01", "2019-05-01", "2019-06-01", "2019-07-01", "2019-08-01", "2019-09-01", "2019-10-01", "2019-11-01", "2019-12-01", "2020-01-01", "2020-02-01", "2020-03-01", "2020-04-01", "2020-05-01", "2020-06-01", "2020-07-01", "2020-08-01", "2020-09-01", "2020-10-01", "2020-11-01", "2020-12-01", "2021-01-01", "2021-02-01", "2021-03-01", "2021-04-01", "2021-05-01", "2021-06-01", "2021-07-01", "2021-08-01", "2021-09-01", "2021-10-01", "2021-11-01", "2021-12-01", "2022-01-01", "2022-02-01", "2022-03-01", "2022-04-01", "2022-05-01", "2022-06-01", "2022-07-01", "2022-08-01", "2022-09-01", "2022-10-01", "2022-11-01", "2022-12-01", "2023-01-01", "2023-02-01", "2023-03-01", "2023-04-01", "2023-05-01", "2023-06-01", "2023-07-01", "2023-08-01", "2023-09-01", "2023-10-01", "2023-11-01", "2023-12-01", "2024-01-01", "2024-02-01", "2024-03-01", "2024-04-01", "2024-05-01", "2024-06-01", "2024-07-01", "2024-08-01", "2024-09-01", "2024-10-01", "2024-11-01", "2024-12-01", "2025-01-01", "2025-02-01", "2025-03-01", "2025-04-01", "2025-05-01", "2025-06-01", "2025-07-01", "2025-08-01", "2025-09-01", "2025-10-01", "2025-11-01", "2025-12-01", "2026-01-01", "2026-02-01", "2026-03-01", "2026-04-01"];
+const sbpeSeries = {
+  dep: [121.29, 112.9, 132.29, 124.14, 124.35, 132.85, 137.54, 127.76, 128.55, 124.74, 135.94, 162.72, 124.05, 125.24, 133.7, 124.18, 131.25, 130.91, 130.68, 136.9, 120.81, 134.7, 140.37, 165.6, 136.98, 121.77, 149.96, 128.16, 148.35, 143.91, 144.54, 148.51, 143.25, 143.53, 146.58, 173.05, 150.97, 132.84, 150.51, 150.49, 150.48, 148.84, 156.7, 164.95, 152.13, 161.08, 161.01, 185.92, 163.41, 153.36, 155.82, 165.82, 170.03, 158.23, 177.5, 170.95, 185.04, 184.32, 175.76, 220.88, 184.82, 165.75, 186.75, 182.79, 200.81, 219.32, 249.05, 243.93, 252.04, 237.53, 255.57, 290.26, 206.04, 203.08, 271.84, 223.3, 235.26, 249.35, 256.37, 255.25, 244.85, 241.33, 244.3, 280.46, 225.53, 226.74, 270.45, 243.11, 294.46, 267.7, 249.42, 272.26, 266.32, 262.2, 265.47, 302.4, 260.97, 243.78, 283.19, 250.62, 285.08, 287.54, 281.0, 277.2, 263.85, 277.63, 0, 0, 286.62, 269.71, 280.38, 303.93, 311.31, 298.94, 316.47, 302.37, 296.53, 306.82, 294.18, 343.25, 281.98, 287.77, 294.08, 301.99, 314.01, 314.34, 310.78, 297.53, 305.67, 301.64, 296.61, 374.01, 286.71, 284.66, 320.36, 313.99],
+  wd:  [125.74, 117.77, 141.49, 129.37, 129.64, 139.96, 139.92, 134.99, 133.92, 127.58, 136.9, 157.93, 133.57, 131.98, 138.89, 130.48, 135.43, 133.7, 131.59, 140.42, 122.73, 136.47, 137.77, 156.6, 145.69, 122.25, 153.5, 128.65, 148.18, 139.04, 143.44, 146.87, 140.08, 145.19, 142.81, 158.09, 155.95, 133.43, 147.66, 150.43, 149.24, 144.93, 154.64, 160.54, 145.35, 163.22, 159.06, 173.7, 172.82, 156.2, 154.25, 168.65, 170.49, 155.46, 179.34, 169.92, 176.95, 184.67, 172.71, 207.28, 194.65, 168.02, 178.5, 158.17, 170.51, 204.88, 226.69, 235.98, 242.06, 233.47, 256.02, 274.31, 222.69, 208.09, 276.69, 221.26, 236.44, 244.11, 249.9, 260.64, 251.19, 247.3, 253.56, 274.32, 241.2, 229.19, 283.05, 250.85, 289.23, 271.03, 261.03, 291.95, 271.27, 271.63, 269.83, 296.73, 288.19, 252.36, 288.85, 255.69, 295.53, 285.12, 284.7, 285.67, 269.41, 286.46, 0, 0, 302.89, 273.06, 290.04, 306.96, 305.96, 290.06, 319.32, 303.65, 302.67, 311.47, 295.55, 340.58, 302.28, 292.83, 303.32, 306.33, 314.14, 313.66, 316.05, 302.2, 317.39, 308.53, 297.13, 369.53, 305.52, 288.73, 329.44, 313.49],
+  net: [-4.45, -4.87, -9.2, -5.23, -5.29, -7.12, -2.37, -7.23, -5.38, -2.84, -0.96, 4.79, -9.52, -6.73, -5.18, -6.3, -4.18, -2.79, -0.91, -3.52, -1.91, -1.77, 2.6, 9.0, -8.72, -0.49, -3.54, -0.49, 0.17, 4.87, 1.1, 1.65, 3.17, -1.67, 3.76, 14.96, -4.97, -0.59, 2.85, 0.07, 1.25, 3.9, 2.07, 4.41, 6.78, -2.13, 1.95, 12.22, -9.41, -2.83, 1.57, -2.83, -0.46, 2.77, -1.84, 1.03, 8.09, -0.35, 3.05, 13.6, -9.84, -2.27, 8.25, 24.61, 30.3, 14.44, 22.36, 7.95, 9.97, 4.06, -0.44, 15.96, -16.64, -5.01, -4.85, 2.04, -1.18, 5.23, 6.47, -5.4, -6.34, -5.97, -9.25, 6.14, -15.68, -2.44, -12.6, -7.74, 5.22, -3.33, -11.61, -19.7, -4.96, -9.43, -4.35, 5.67, -27.22, -8.58, -5.67, -5.08, -10.44, 2.42, -3.7, -8.47, -5.56, -8.82, 0, 0, -16.27, -3.35, -9.66, -3.03, 5.34, 8.88, -2.86, -1.29, -6.14, -4.65, -1.37, 2.67, -20.3, -5.06, -9.24, -4.34, -0.13, 0.67, -5.27, -4.67, -11.72, -6.88, -0.52, 4.49, -18.81, -4.07, -9.09, 0.5],
+  inc: [2.81, 2.89, 2.78, 3.04, 2.87, 3.17, 3.23, 3.4, 3.28, 3.15, 3.16, 3.24, 3.16, 3.16, 3.02, 3.19, 3.07, 3.15, 3.23, 3.32, 3.26, 3.14, 3.12, 3.14, 3.38, 2.91, 2.91, 2.93, 2.57, 2.92, 2.74, 2.83, 2.6, 2.49, 2.44, 2.3, 2.3, 2.25, 2.24, 2.15, 2.17, 2.18, 2.2, 2.21, 2.17, 2.28, 2.27, 2.2, 2.26, 2.3, 2.33, 2.31, 2.31, 2.32, 2.34, 2.33, 2.21, 2.21, 2.11, 1.97, 1.95, 1.86, 1.8, 1.78, 1.71, 1.58, 1.47, 1.33, 1.28, 1.26, 1.27, 1.27, 1.28, 1.2, 1.35, 1.35, 1.54, 1.73, 1.91, 2.09, 2.37, 2.52, 2.78, 3.32, 4.14, 3.98, 4.07, 4.37, 4.24, 4.84, 4.77, 5.03, 4.99, 4.78, 4.69, 4.74, 5.73, 5.39, 4.2, 4.78, 4.34, 4.77, 4.69, 4.76, 4.64, 4.25, 0, 0, 3.91, 4.04, 3.68, 3.9, 3.93, 4.07, 4.03, 4.07, 4.09, 4.12, 4.2, 4.08, 4.2, 4.72, 4.2, 4.68, 4.55, 4.75, 4.82, 4.83, 4.79, 4.8, 4.79, 4.73, 4.81, 4.62, 4.67, 4.73],
+  bal: [520.7, 518.72, 512.3, 510.12, 507.7, 503.76, 504.61, 500.78, 498.69, 498.99, 501.19, 509.22, 502.86, 499.29, 497.12, 494.01, 492.89, 493.26, 495.58, 495.38, 496.72, 498.09, 503.81, 515.96, 510.62, 513.04, 512.4, 514.84, 517.58, 525.37, 529.22, 533.69, 539.46, 540.29, 546.49, 563.74, 561.07, 562.73, 567.82, 570.03, 573.45, 579.53, 583.8, 590.42, 599.36, 599.51, 603.72, 618.15, 611.0, 610.47, 614.36, 613.84, 615.69, 620.77, 621.28, 624.64, 634.94, 636.8, 641.97, 657.53, 649.65, 649.23, 659.28, 685.68, 717.69, 733.71, 757.54, 766.82, 778.07, 783.39, 784.22, 801.44, 786.08, 782.27, 778.77, 782.16, 782.52, 789.48, 797.86, 794.55, 790.58, 787.12, 780.65, 790.11, 778.57, 780.11, 771.58, 768.21, 777.67, 779.18, 772.34, 757.68, 757.71, 753.07, 753.41, 763.82, 742.33, 739.14, 737.68, 737.38, 731.18, 738.47, 739.46, 735.75, 734.78, 730.19, 726.88, 738.92, 734.72, 735.4, 739.42, 740.29, 749.57, 762.52, 763.69, 766.47, 764.43, 763.9, 766.73, 773.48, 752.11, 752.16, 752.11, 752.45, 756.87, 762.29, 761.84, 762.0, 755.07, 752.99, 757.26, 766.48, 752.49, 753.03, 748.61, 753.83],
+  ltm: [18.59, 11.8, 0.89, -3.6, -11.07, -20.72, -25.96, -34.14, -41.21, -45.6, -50.16, -50.15, -55.22, -57.08, -53.06, -54.14, -53.03, -48.71, -47.25, -43.53, -40.07, -39.0, -35.43, -31.22, -30.42, -24.17, -22.53, -16.71, -12.36, -4.7, -2.69, 2.47, 7.55, 7.66, 8.82, 14.77, 18.52, 18.42, 24.81, 25.37, 26.44, 25.47, 26.43, 29.19, 32.81, 32.34, 30.53, 27.79, 23.36, 21.11, 19.83, 16.94, 15.23, 14.09, 10.19, 6.82, 8.13, 9.91, 11.01, 12.39, 11.96, 12.52, 19.21, 46.65, 77.41, 89.08, 113.28, 120.19, 122.08, 126.49, 122.99, 125.35, 118.54, 115.81, 102.71, 80.13, 48.65, 39.45, 23.56, 10.21, -6.1, -16.13, -24.94, -34.76, -33.79, -31.23, -38.97, -48.75, -42.35, -50.91, -69.0, -83.3, -81.92, -85.37, -80.47, -80.94, -92.48, -98.62, -91.69, -89.02, -104.69, -98.93, -91.02, -79.8, -80.4, -79.8, -75.45, -81.12, -70.17, -64.95, -68.94, -66.9, -51.11, -44.65, -43.8, -36.62, -37.2, -33.02, -34.39, -31.72, -35.75, -37.46, -37.04, -38.35, -43.82, -52.03, -54.44, -57.82, -63.4, -65.64, -64.79, -62.98, -61.48, -60.49, -60.34, -55.5],
+};
+
+// ===== Funding Composition data (Saldo R$ bi, mensal) =====
+const fundingLabels = ["2014-04-01","2014-05-01","2014-06-01","2014-07-01","2014-08-01","2014-09-01","2014-10-01","2014-11-01","2014-12-01","2015-01-01","2015-02-01","2015-03-01","2015-04-01","2015-05-01","2015-06-01","2015-07-01","2015-08-01","2015-09-01","2015-10-01","2015-11-01","2015-12-01","2016-01-01","2016-02-01","2016-03-01","2016-04-01","2016-05-01","2016-06-01","2016-07-01","2016-08-01","2016-09-01","2016-10-01","2016-11-01","2016-12-01","2017-01-01","2017-02-01","2017-03-01","2017-04-01","2017-05-01","2017-06-01","2017-07-01","2017-08-01","2017-09-01","2017-10-01","2017-11-01","2017-12-01","2018-01-01","2018-02-01","2018-03-01","2018-04-01","2018-05-01","2018-06-01","2018-07-01","2018-08-01","2018-09-01","2018-10-01","2018-11-01","2018-12-01","2019-01-01","2019-02-01","2019-03-01","2019-04-01","2019-05-01","2019-06-01","2019-07-01","2019-08-01","2019-09-01","2019-10-01","2019-11-01","2019-12-01","2020-01-01","2020-02-01","2020-03-01","2020-04-01","2020-05-01","2020-06-01","2020-07-01","2020-08-01","2020-09-01","2020-10-01","2020-11-01","2020-12-01","2021-01-01","2021-02-01","2021-03-01","2021-04-01","2021-05-01","2021-06-01","2021-07-01","2021-08-01","2021-09-01","2021-10-01","2021-11-01","2021-12-01","2022-01-01","2022-02-01","2022-03-01","2022-04-01","2022-05-01","2022-06-01","2022-07-01","2022-08-01","2022-09-01","2022-10-01","2022-11-01","2022-12-01","2023-01-01","2023-02-01","2023-03-01","2023-04-01","2023-05-01","2023-06-01","2023-07-01","2023-08-01","2023-09-01","2023-10-01","2023-11-01","2023-12-01","2024-01-01","2024-02-01","2024-03-01","2024-04-01","2024-05-01","2024-06-01","2024-07-01","2024-08-01","2024-09-01","2024-10-01","2024-11-01","2024-12-01","2025-01-01","2025-02-01","2025-03-01","2025-04-01","2025-05-01","2025-06-01","2025-07-01"];
+const fundingSeries = {
+  sbpe: [480.4649,485.0372,490.2411,495.7259,499.4808,503.9529,508.2718,514.7715,522.3435,520.7023,518.7193,512.3019,510.1161,507.7036,503.7571,504.6099,500.7814,498.6859,498.9929,501.1914,509.223,502.8632,499.291,497.1229,494.0052,492.8936,493.2557,495.5788,495.3804,496.7224,498.0881,503.8099,515.9554,510.6204,513.0399,512.4049,514.8434,517.582,525.3743,529.2174,533.6934,539.4636,540.2877,546.4873,563.7417,561.067,562.7264,567.8158,570.0311,573.4489,579.5282,583.7972,590.4157,599.3639,599.5089,603.7243,618.1461,611.0018,610.465,614.3586,613.8392,615.6873,620.7732,621.2774,624.6374,634.9443,636.8044,641.9678,657.5314,649.645,649.2296,659.2835,685.6757,717.6909,733.7067,757.5359,766.8163,778.0707,783.3923,784.2152,801.438,786.0793,782.2699,778.7733,782.1626,782.5168,789.4776,797.8586,794.546,790.5765,787.1235,780.6514,790.109,778.5698,780.1067,771.5769,768.2082,777.6733,779.1814,772.3395,757.6759,757.7108,753.0694,753.4051,763.8151,742.3302,739.1395,737.6771,737.3819,731.2779,738.4701,739.4593,735.7457,734.7767,730.1937,732.4797,747.0812,734.7185,735.4033,739.4215,740.2954,749.5703,762.5253,763.6923,766.4744,764.4266,763.8992,766.7314,773.4812,757.496,757.156,null,null,null,null,null],
+  cri:  [41.0979,40.7955,41.7892,42.0464,44.1531,42.9954,43.6724,43.3164,46.9844,47.0889,65.6838,55.9509,56.7101,58.7942,61.6837,58.7744,58.7469,58.6899,58.5107,58.5744,60.5664,60.5806,61.0259,61.2803,58.6817,64.9638,65.1271,65.357,65.6791,65.4193,65.6947,65.8195,73.6614,72.9879,75.1156,72.668,94.0563,73.0504,71.9276,71.9299,73.3617,72.4587,73.0556,72.9129,73.7915,73.0053,72.1584,72.7211,72.9907,72.2104,70.58,72.8207,71.6309,70.712,70.7082,82.4671,78.2881,73.164,69.9538,70.094,69.6196,69.2865,70.5589,71.4671,72.8055,73.3006,74.0982,74.3897,77.0647,76.781,77.7719,77.1769,76.8051,76.8182,76.9404,78.5297,77.6092,77.7124,78.1253,78.6064,79.444,79.4336,79.9751,81.6166,82.8155,86.6324,99.141,90.027,91.8658,94.7367,97.7356,98.9344,105.6565,106.9513,108.2177,111.2687,113.2978,118.1249,124.8464,129.1765,133.5067,137.765,139.3774,142.5181,149.6598,146.9496,147.9174,150.4365,151.7448,151.2311,154.5035,157.4598,164.5109,168.744,171.0725,175.0865,182.2615,185.1175,189.6067,193.6207,197.5958,200.2476,208.0224,212.3618,212.3609,214.5442,218.2135,221.0493,226.2208,226.706,240.7886,229.6408,232.3739,234.9295,238.082,239.765],
+  lci:  [114.1025,117.2959,119.6658,123.6169,127.2894,131.3042,138.0134,143.3873,150.9086,159.667,165.5449,170.2386,175.1379,179.5691,182.538,181.9869,183.0896,184.0935,185.5621,186.2347,190.5366,191.6337,192.5191,193.498,191.9229,188.3871,188.8226,189.86,189.943,189.9223,188.5286,184.7612,183.4338,181.7619,181.3416,181.524,181.9411,181.747,180.4565,178.6365,177.4293,179.2417,194.4273,192.1762,183.4704,183.8793,179.7734,176.9919,171.8548,170.8907,167.7947,165.8214,164.8027,162.9006,159.4621,158.4296,156.3745,155.5637,153.4293,152.0746,151.9736,152.3966,150.7878,147.9927,147.2712,147.7186,147.0245,145.3752,141.8768,138.973,137.6177,136.7727,137.7507,135.6296,132.0754,129.0047,126.105,125.6154,124.4602,123.9203,121.2909,120.6909,119.5092,117.9976,117.0377,116.26,115.7189,116.5304,118.5613,120.3899,124.1818,130.823,140.9249,149.2328,154.8514,164.8207,169.9887,175.0776,179.2424,184.9052,190.568,196.7275,206.083,226.0557,238.6946,248.3857,259.4353,275.5337,284.426,291.4686,300.2027,312.8038,323.7577,332.4785,340.6358,349.258,360.4032,371.6817,364.468,361.5689,360.5644,359.6276,360.7816,361.6371,362.9909,365.4052,372.9353,379.5196,401.4986,413.8843,427.3762,445.5805,455.7816,463.9418,473.0369,482.9154],
+  lh:   [1.3049,1.3661,1.4136,1.494,1.4574,1.4666,1.4463,1.4319,1.3685,1.3613,1.3331,1.3042,1.2527,1.2099,1.1624,1.0988,1.0601,1.0347,1.0141,1.0079,1.042,1.1625,1.1543,1.1758,1.1868,1.1398,1.1235,1.0918,1.094,1.0858,1.0961,1.1314,1.1377,1.1252,1.0908,1.1079,1.1179,1.1119,1.1082,1.0672,1.0632,1.0744,1.0849,1.0717,1.0909,1.0385,1.0765,1.0946,1.0899,1.0481,1.0651,1.0427,1.0604,1.0775,1.0968,1.1056,1.1018,0.967,0.9731,0.9912,0.9911,0.974,0.979,0.9923,0.9993,1.0071,1.0212,1.0365,1.0395,0.8894,0.8783,0.8875,0.8838,0.8683,0.8876,0.9195,0.9436,0.9871,1.0388,1.0699,1.0999,1.1243,0.5713,0.5771,0.6017,0.3143,0.0208,0.0208,0.0209,null,null,null,null,null,null,null,0.0181,0.0614,0.0294,0.151,0.2854,0.3285,0.3325,0.3686,0.4198,0.6043,0.5993,0.8423,1.0114,1.0035,0.9621,0.87,0.8144,0.7182,0.7891,0.7846,0.7842,0.6882,0.5967,0.4945,0.374,0.3951,0.4443,0.4259,0.4152,0.4093,0.3165,0.3122,0.3146,0.304,0.2718,0.273,0.2767,0.2806,0.2603,0.2629],
+  lig:  [null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,0.1772,2.0191,2.8652,3.58,4.5419,5.8487,6.7714,7.686,7.8465,8.8164,9.6619,10.2148,10.6738,11.1923,11.6553,11.9555,12.4312,13.7034,14.4623,15.196,16.0408,16.533,17.109,17.9286,18.7006,20.2093,21.3804,22.4728,24.7375,26.3598,28.0964,29.4494,30.8501,34.2243,36.8994,40.3572,44.1174,47.6063,50.1199,53.2451,58.1835,62.0846,65.6127,69.2038,72.1508,75.0979,78.0027,81.4282,85.1107,88.6969,90.9857,93.1992,95.3174,97.7862,99.4079,101.3684,102.7886,104.2251,105.5575,106.9536,108.3125,109.9218,111.1969,111.4616,111.7495,112.6633,113.7697,114.5398,114.4171,114.4729,119.3638,115.6195,115.5899,116.2066,114.8989,113.4967,116.3355,116.2715,113.0282,111.7852,109.0204],
+};
+const FUNDING_COLORS = {
+  sbpe: '#FF6200', cri: '#000000', lci: '#FFB600', lh: '#57B49A', lig: '#A6CF2D'
+};
+const FUNDING_LABELS_MAP = { sbpe: 'SBPE', cri: 'CRI', lci: 'LCI', lh: 'LH', lig: 'LIG' };
+const FUNDING_KEYS = ['sbpe','cri','lci','lh','lig'];
+
+const COLORS = {
+  black: '#000000', orange: '#FF6200', yellow: '#FFB600',
+  green: '#57B49A', lime: '#A6CF2D', gray: '#BFBFBF',
+};
+
+const MONTHS_EN = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const fmtDate = (s) => {
+  const [y,m] = s.split('-');
+  return MONTHS_EN[parseInt(m,10)-1] + '-' + y.slice(2);
+};
+
+const baseOpts = (unit) => ({
+  responsive: true, maintainAspectRatio: false,
+  interaction: { mode: 'index', intersect: false },
+  plugins: {
+    legend: {
+      position: 'top', align: 'end',
+      labels: {
+        usePointStyle: true, pointStyle: 'line', boxHeight: 2, boxWidth: 28,
+        font: { family: 'Arial', size: 12, weight: '500' }, padding: 14, color: '#000000'
+      }
+    },
+    tooltip: {
+      backgroundColor: '#000000', titleColor: '#fff', bodyColor: '#fff',
+      titleFont: { family: 'Arial', size: 12, weight: '600' },
+      bodyFont: { family: 'Arial', size: 12 },
+      padding: 12, cornerRadius: 6, displayColors: true, boxPadding: 4,
+      callbacks: {
+        title: (items) => fmtDate(items[0].label),
+        label: (ctx) => '  ' + ctx.dataset.label + ': ' +
+          (ctx.parsed.y == null ? '—' : ctx.parsed.y.toFixed(2) + (unit || '%'))
+      }
+    }
+  },
+  scales: {
+    x: {
+      ticks: {
+        callback: function(v) { return fmtDate(this.getLabelForValue(v)); },
+        maxTicksLimit: 14, font: { family: 'Arial', size: 12 }, color: '#000000'
+      },
+      grid: { display: false }, border: { color: '#000000', width: 0.5 }
+    },
+    y: {
+      ticks: {
+        callback: (v) => v.toFixed(0) + (unit || '%'),
+        font: { family: 'Arial', size: 12 }, color: '#000000'
+      },
+      grid: { display: false }, border: { color: '#000000', width: 0.5 }
+    }
+  }
+});
+
+const ds = (label, color, dataArr, isMain) => ({
+  label, data: dataArr, borderColor: color,
+  backgroundColor: color + '15',
+  borderWidth: isMain ? 3 : 2,
+  pointRadius: 0, pointHoverRadius: 5, pointHoverBackgroundColor: color,
+  pointHoverBorderColor: '#fff', pointHoverBorderWidth: 2,
+  tension: 0.25, spanGaps: true
+});
+
+const barDataLabels = {
+  id: 'barDataLabels',
+  afterDatasetsDraw(chart) {
+    const { ctx } = chart;
+    ctx.save();
+    ctx.font = '600 12px Arial';
+    ctx.fillStyle = '#000000';
+    ctx.textAlign = 'center';
+    chart.data.datasets.forEach((dataset, di) => {
+      const meta = chart.getDatasetMeta(di);
+      if (meta.hidden) return;
+      meta.data.forEach((bar, i) => {
+        const v = dataset.data[i];
+        if (v == null) return;
+        const label = v.toFixed(2) + (chart._uiUnit || '%');
+        if (v >= 0) {
+          ctx.textBaseline = 'bottom';
+          ctx.fillText(label, bar.x, bar.y - 4);
+        } else {
+          ctx.textBaseline = 'top';
+          ctx.fillText(label, bar.x, bar.y + bar.height + 4);
+        }
+      });
+    });
+    ctx.restore();
+  }
+};
+
+const barOpts = (unit) => {
+  const opts = baseOpts(unit);
+  opts.scales.x.ticks = {
+    font: { family: 'Arial', size: 12, weight: '600' }, color: '#000000'
+  };
+  opts.scales.y.display = false;
+  opts.layout = { padding: { top: 22 } };
+  opts.plugins.tooltip.callbacks = {
+    title: (items) => items[0].label,
+    label: (ctx) => '  ' + ctx.dataset.label + ': ' +
+      (ctx.parsed.y == null ? '—' : ctx.parsed.y.toFixed(2) + (unit || '%'))
+  };
+  return opts;
+};
+
+// SBPE monthly bar: positive green, negative orange
+const sbpeMonthlyBarOpts = () => {
+  const opts = baseOpts(' bi');
+  opts.scales.x.ticks = {
+    callback: function(v) { return fmtDate(this.getLabelForValue(v)); },
+    maxTicksLimit: 14, font: { family: 'Arial', size: 12 }, color: '#000000'
+  };
+  opts.scales.y.ticks = {
+    callback: (v) => v.toFixed(0),
+    font: { family: 'Arial', size: 12 }, color: '#000000'
+  };
+  opts.layout = { padding: { top: 22, bottom: 22 } };
+  opts.plugins.tooltip.callbacks = {
+    title: (items) => fmtDate(items[0].label),
+    label: (ctx) => '  R$ ' + (ctx.parsed.y == null ? '—' : ctx.parsed.y.toFixed(2) + ' bi')
+  };
+  return opts;
+};
+
+const lastInccIdx = inccLabels.length - 1;
+const refLbl  = fmtDate(inccLabels[lastInccIdx]);
+const prevLbl = fmtDate(inccLabels[lastInccIdx - 1]);
+const yoyLbl  = fmtDate(inccLabels[lastInccIdx - 12]);
+
+const barBase = (label, color, dataArr) => ({
+  label, data: dataArr, backgroundColor: color, borderColor: color,
+  borderWidth: 0, borderRadius: 3, barPercentage: 0.85, categoryPercentage: 0.7
+});
+
+const chartConfigs = {
+  c1: {
+    type: 'line', unit: '%', title: 'INCC_Composicao',
+    data: { labels: inccLabels, datasets: [
+      ds('INCC', COLORS.orange, inccSeries.incc, true),
+      ds('Labor', COLORS.black, inccSeries.labor),
+      ds('Materials & Services', COLORS.yellow, inccSeries.mats),
+    ]},
+    optsFn: () => baseOpts('%')
+  },
+  c3: {
+    type: 'bar', unit: '%', title: 'INCC_Snapshot_Comparativo',
+    data: {
+      labels: ['INCC (%)', 'Materials & Services (%)', 'Labor (%)'],
+      datasets: [
+        barBase(yoyLbl,  COLORS.yellow, [inccSeries.incc[lastInccIdx-12], inccSeries.mats[lastInccIdx-12], inccSeries.labor[lastInccIdx-12]]),
+        barBase(prevLbl, COLORS.black,  [inccSeries.incc[lastInccIdx-1],  inccSeries.mats[lastInccIdx-1],  inccSeries.labor[lastInccIdx-1]]),
+        barBase(refLbl,  COLORS.orange, [inccSeries.incc[lastInccIdx],    inccSeries.mats[lastInccIdx],    inccSeries.labor[lastInccIdx]]),
+      ]
+    },
+    optsFn: () => barOpts('%')
+  },
+  c2: {
+    type: 'line', unit: '%', title: 'INCC_Sistemas_Construtivos',
+    data: { labels: inccLabels, datasets: [
+      ds('INCC', COLORS.orange, inccSeries.incc, true),
+      ds('Masonry', COLORS.black, inccSeries.mason),
+      ds('Aluminum Molds', COLORS.yellow, inccSeries.alum),
+    ]},
+    optsFn: () => baseOpts('%')
+  },
+  c4: {
+    type: 'bar', unit: '%', title: 'INCC_Snapshot_Sistemas_Construtivos',
+    data: {
+      labels: ['INCC (%)', 'Masonry (%)', 'Aluminum Molds (%)'],
+      datasets: [
+        barBase(yoyLbl,  COLORS.yellow, [inccSeries.incc[lastInccIdx-12], inccSeries.mason[lastInccIdx-12], inccSeries.alum[lastInccIdx-12]]),
+        barBase(prevLbl, COLORS.black,  [inccSeries.incc[lastInccIdx-1],  inccSeries.mason[lastInccIdx-1],  inccSeries.alum[lastInccIdx-1]]),
+        barBase(refLbl,  COLORS.orange, [inccSeries.incc[lastInccIdx],    inccSeries.mason[lastInccIdx],    inccSeries.alum[lastInccIdx]]),
+      ]
+    },
+    optsFn: () => barOpts('%')
+  },
+  c5: {
+    type: 'line', unit: ' bi', title: 'SBPE_Captacao_Liquida_LTM',
+    data: { labels: sbpeLabels, datasets: [{
+      label: 'Captação Líquida LTM (R$ bi)',
+      data: sbpeSeries.ltm,
+      borderColor: COLORS.yellow,
+      backgroundColor: COLORS.yellow + '55',
+      borderWidth: 2.5,
+      pointRadius: 0,
+      pointHoverRadius: 5,
+      pointHoverBackgroundColor: COLORS.yellow,
+      pointHoverBorderColor: '#fff',
+      pointHoverBorderWidth: 2,
+      tension: 0.25,
+      spanGaps: true,
+      fill: 'origin'
+    }]},
+    optsFn: () => {
+      const o = baseOpts(' bi');
+      o.plugins.tooltip.callbacks.label = (ctx) => '  R$ ' + (ctx.parsed.y == null ? '—' : ctx.parsed.y.toFixed(2) + ' bi');
+      o.scales.y.ticks.callback = (v) => v.toFixed(0);
+      return o;
+    }
+  },
+  c6: {
+    type: 'bar', unit: ' bi', title: 'SBPE_Captacao_Liquida_Mensal',
+    data: { labels: sbpeLabels.slice(-12), datasets: [{
+      label: 'Captação Líquida Mensal (R$ bi)',
+      data: sbpeSeries.net.slice(-12),
+      backgroundColor: sbpeSeries.net.slice(-12).map(v => v == null ? COLORS.gray : (v >= 0 ? COLORS.green : COLORS.orange)),
+      borderWidth: 0,
+      borderRadius: 2,
+      barPercentage: 0.95,
+      categoryPercentage: 0.85
+    }]},
+    optsFn: sbpeMonthlyBarOpts
+  },
+  c7: {
+    type: 'bar', unit: ' bi', title: 'Funding_Composicao_Empilhado',
+    data: { labels: fundingLabels, datasets: FUNDING_KEYS.map(k => ({
+      label: FUNDING_LABELS_MAP[k],
+      data: fundingSeries[k],
+      backgroundColor: FUNDING_COLORS[k],
+      borderColor: FUNDING_COLORS[k],
+      borderWidth: 0,
+      stack: 'funding'
+    }))},
+    optsFn: () => {
+      const o = baseOpts(' bi');
+      o.scales.x.stacked = true;
+      o.scales.y.stacked = true;
+      o.scales.y.ticks = {
+        callback: (v) => v.toLocaleString('pt-BR'),
+        font: { family: 'Arial', size: 12 }, color: '#000000'
+      };
+      o.plugins.tooltip.callbacks = {
+        title: (items) => fmtDate(items[0].label),
+        label: (ctx) => '  ' + ctx.dataset.label + ': R$ ' +
+          (ctx.parsed.y == null ? '—' : ctx.parsed.y.toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 }) + ' bi')
+      };
+      return o;
+    }
+  },
+  c8: {
+    type: 'line', unit: '%', title: 'Funding_Composicao_Area_100pct',
+    data: { labels: fundingLabels, datasets: FUNDING_KEYS.map(k => ({
+      label: FUNDING_LABELS_MAP[k],
+      data: fundingSeries[k],
+      borderColor: FUNDING_COLORS[k],
+      backgroundColor: FUNDING_COLORS[k],
+      borderWidth: 1.2,
+      pointRadius: 0,
+      pointHoverRadius: 4,
+      pointHoverBackgroundColor: FUNDING_COLORS[k],
+      pointHoverBorderColor: '#fff',
+      pointHoverBorderWidth: 2,
+      tension: 0.25,
+      fill: true,
+      spanGaps: false
+    }))},
+    optsFn: () => {
+      const o = baseOpts('%');
+      o.scales.y.stacked = true;
+      o.scales.y.min = 0;
+      o.scales.y.max = 100;
+      o.scales.y.ticks = {
+        callback: (v) => v.toFixed(0) + '%',
+        stepSize: 20,
+        font: { family: 'Arial', size: 12 }, color: '#000000'
+      };
+      o.plugins.tooltip.callbacks = {
+        title: (items) => fmtDate(items[0].label),
+        label: (ctx) => '  ' + ctx.dataset.label + ': ' +
+          (ctx.parsed.y == null ? '—' : ctx.parsed.y.toFixed(1) + '%')
+      };
+      return o;
+    }
+  },
+};
+
+const chartInstances = {};
+
+// ===== Filter state & helpers =====
+const chartFilters = {
+  c1: { period: 'all', from: null, to: null, hiddenSeries: new Set() },
+  c2: { period: 'all', from: null, to: null, hiddenSeries: new Set() },
+  c3: { refIdx: lastInccIdx },
+  c4: { refIdx: lastInccIdx },
+  c5: { period: 'all', from: null, to: null, hiddenSeries: new Set() },
+  c6: { period: '12' },
+  c7: { period: 'all', from: null, to: null, hiddenSeries: new Set() },
+  c8: { period: 'all', from: null, to: null, hiddenSeries: new Set() },
+};
+
+// Cache original data for line/bar charts (filters slice from this)
+['c1','c2','c5','c7','c8'].forEach(id => {
+  const cfg = chartConfigs[id];
+  cfg._origLabels = cfg.data.labels.slice();
+  cfg._origDatasetsData = cfg.data.datasets.map(d => d.data.slice());
+});
+
+const SNAPSHOT_SERIES = {
+  c3: () => [inccSeries.incc, inccSeries.mats, inccSeries.labor],
+  c4: () => [inccSeries.incc, inccSeries.mason, inccSeries.alum],
+};
+
+function applyLineFilter(chartId) {
+  const f = chartFilters[chartId];
+  const cfg = chartConfigs[chartId];
+  const inst = chartInstances[chartId];
+  if (!inst) return;
+  const allLabels = cfg._origLabels;
+  let startIdx = 0, endIdx = allLabels.length - 1;
+  if (f.from || f.to) {
+    if (f.from) {
+      const i = allLabels.indexOf(f.from + '-01');
+      if (i >= 0) startIdx = i;
+    }
+    if (f.to) {
+      const i = allLabels.indexOf(f.to + '-01');
+      if (i >= 0) endIdx = i;
+    }
+    if (startIdx > endIdx) { const t = startIdx; startIdx = endIdx; endIdx = t; }
+  } else if (f.period !== 'all') {
+    const n = parseInt(f.period, 10);
+    startIdx = Math.max(0, endIdx - n + 1);
+  }
+  inst.data.labels = allLabels.slice(startIdx, endIdx + 1);
+  inst.data.datasets.forEach((ds, i) => {
+    ds.data = cfg._origDatasetsData[i].slice(startIdx, endIdx + 1);
+    ds.hidden = f.hiddenSeries && f.hiddenSeries.has(i);
+  });
+  inst.update();
+}
+
+function applySnapshotFilter(chartId) {
+  const f = chartFilters[chartId];
+  const inst = chartInstances[chartId];
+  if (!inst) return;
+  const refIdx = f.refIdx;
+  if (refIdx < 12 || refIdx > lastInccIdx) return;
+  const refL  = fmtDate(inccLabels[refIdx]);
+  const prevL = fmtDate(inccLabels[refIdx - 1]);
+  const yoyL  = fmtDate(inccLabels[refIdx - 12]);
+  const series = SNAPSHOT_SERIES[chartId]();
+  inst.data.datasets[0].label = yoyL;
+  inst.data.datasets[0].data  = series.map(s => s[refIdx - 12]);
+  inst.data.datasets[1].label = prevL;
+  inst.data.datasets[1].data  = series.map(s => s[refIdx - 1]);
+  inst.data.datasets[2].label = refL;
+  inst.data.datasets[2].data  = series.map(s => s[refIdx]);
+  inst.update();
+}
+
+function applyMonthlyBarFilter(chartId) {
+  const f = chartFilters[chartId];
+  const inst = chartInstances[chartId];
+  if (!inst) return;
+  const n = f.period === 'all' ? sbpeLabels.length : parseInt(f.period, 10);
+  const labels = sbpeLabels.slice(-n);
+  const data = sbpeSeries.net.slice(-n);
+  inst.data.labels = labels;
+  inst.data.datasets[0].data = data;
+  inst.data.datasets[0].backgroundColor = data.map(v => v == null ? COLORS.gray : (v >= 0 ? COLORS.green : COLORS.orange));
+  inst.update();
+}
+
+function applyPercentAreaFilter(chartId) {
+  const f = chartFilters[chartId];
+  const cfg = chartConfigs[chartId];
+  const inst = chartInstances[chartId];
+  if (!inst) return;
+  const allLabels = cfg._origLabels;
+  let startIdx = 0, endIdx = allLabels.length - 1;
+  if (f.from || f.to) {
+    if (f.from) { const i = allLabels.indexOf(f.from + '-01'); if (i >= 0) startIdx = i; }
+    if (f.to)   { const i = allLabels.indexOf(f.to   + '-01'); if (i >= 0) endIdx   = i; }
+    if (startIdx > endIdx) { const t = startIdx; startIdx = endIdx; endIdx = t; }
+  } else if (f.period !== 'all') {
+    const n = parseInt(f.period, 10);
+    startIdx = Math.max(0, endIdx - n + 1);
+  }
+  const labelsSlice = allLabels.slice(startIdx, endIdx + 1);
+  const N = labelsSlice.length;
+  const hidden = f.hiddenSeries || new Set();
+  const sliced = cfg._origDatasetsData.map(arr => arr.slice(startIdx, endIdx + 1));
+  const sums = new Array(N).fill(0);
+  for (let t = 0; t < N; t++) {
+    for (let i = 0; i < sliced.length; i++) {
+      if (hidden.has(i)) continue;
+      const v = sliced[i][t];
+      if (v != null) sums[t] += v;
+    }
+  }
+  inst.data.labels = labelsSlice;
+  inst.data.datasets.forEach((ds, i) => {
+    ds.hidden = hidden.has(i);
+    ds.data = sliced[i].map((v, t) => {
+      if (sums[t] <= 0) return null;
+      if (v == null) return 0;
+      return (v / sums[t]) * 100;
+    });
+  });
+  inst.update();
+}
+
+function applyFilter(chartId) {
+  if (chartId === 'c3' || chartId === 'c4') applySnapshotFilter(chartId);
+  else if (chartId === 'c6') applyMonthlyBarFilter(chartId);
+  else if (chartId === 'c8') applyPercentAreaFilter(chartId);
+  else applyLineFilter(chartId);
+}
+
+const NO_DATA_LABELS = new Set(['c6','c7']);
+function buildChart(id) {
+  if (chartInstances[id]) return;
+  const cfg = chartConfigs[id];
+  const inst = new Chart(document.getElementById(id), {
+    type: cfg.type, data: cfg.data, options: cfg.optsFn(),
+    plugins: (cfg.type === 'bar' && !NO_DATA_LABELS.has(id)) ? [barDataLabels] : []
+  });
+  inst._uiUnit = cfg.unit;
+  chartInstances[id] = inst;
+  applyFilter(id);
+}
+
+// ===== Filter event delegation =====
+document.addEventListener('click', (e) => {
+  const periodBtn = e.target.closest('.filter-chip[data-period]');
+  if (periodBtn) {
+    const wrap = periodBtn.closest('.chart-filters');
+    const chartId = wrap.dataset.chartFilter;
+    chartFilters[chartId].period = periodBtn.dataset.period;
+    if ('from' in chartFilters[chartId]) chartFilters[chartId].from = null;
+    if ('to' in chartFilters[chartId]) chartFilters[chartId].to = null;
+    wrap.querySelectorAll('.filter-chip[data-period]').forEach(b => b.classList.toggle('active', b === periodBtn));
+    wrap.querySelectorAll('input[data-custom]').forEach(inp => inp.value = '');
+    applyFilter(chartId);
+    return;
+  }
+  const seriesBtn = e.target.closest('.filter-chip.series-chip');
+  if (seriesBtn) {
+    const wrap = seriesBtn.closest('.chart-filters');
+    const chartId = wrap.dataset.chartFilter;
+    const idx = parseInt(seriesBtn.dataset.series, 10);
+    const state = chartFilters[chartId];
+    if (state.hiddenSeries.has(idx)) {
+      state.hiddenSeries.delete(idx);
+      seriesBtn.classList.remove('off');
+    } else {
+      state.hiddenSeries.add(idx);
+      seriesBtn.classList.add('off');
+    }
+    applyFilter(chartId);
+  }
+});
+
+document.addEventListener('change', (e) => {
+  if (e.target.matches('input[data-custom]')) {
+    const wrap = e.target.closest('.chart-filters');
+    const chartId = wrap.dataset.chartFilter;
+    chartFilters[chartId][e.target.dataset.custom] = e.target.value || null;
+    wrap.querySelectorAll('.filter-chip[data-period]').forEach(b => b.classList.remove('active'));
+    applyFilter(chartId);
+  } else if (e.target.matches('input[data-refmonth]')) {
+    const wrap = e.target.closest('.chart-filters');
+    const chartId = wrap.dataset.chartFilter;
+    const ym = e.target.value;
+    if (ym) {
+      const idx = inccLabels.indexOf(ym + '-01');
+      if (idx >= 12) {
+        chartFilters[chartId].refIdx = idx;
+        applyFilter(chartId);
+      }
+    }
+  } else if (e.target.matches('input[data-fgts-ref]')) {
+    const ym = e.target.value;
+    if (ym) renderFgtsTable(ym);
+  }
+});
+
+// ===== Page routing =====
+const PAGES = {
+  incc: ['c1','c3','c2','c4'],
+  sbpe: ['c5','c6','c7','c8'],
+  fgts: [],
+};
+
+function showPage(name) {
+  if (!PAGES[name]) name = 'incc';
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  document.querySelectorAll('.nav-sub[data-page]').forEach(el => {
+    el.classList.toggle('active', el.dataset.page === name);
+  });
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      PAGES[name].forEach(buildChart);
+      PAGES[name].forEach(id => {
+        if (chartInstances[id]) chartInstances[id].resize();
+      });
+      if (name === 'fgts') {
+        const inp = document.querySelector('input[data-fgts-ref]');
+        renderFgtsTable(inp ? inp.value : '2026-04');
+      }
+    });
+  });
+}
+
+document.querySelectorAll('.nav-sub[data-page]').forEach(el => {
+  el.addEventListener('click', (e) => {
+    e.preventDefault();
+    const p = el.dataset.page;
+    history.replaceState(null, '', '#' + p);
+    showPage(p);
+  });
+});
+
+window.addEventListener('hashchange', () => {
+  showPage(location.hash.replace('#','') || 'incc');
+});
+
+showPage(location.hash.replace('#','') || 'incc');
+
+// ===== Image download =====
+const SIZES = {
+  Grande:  { w: 22, h: 6 },
+  Medio:   { w: 16, h: 6 },
+  Pequeno: { w: 11, h: 6 },
+};
+const PX_PER_CM = 96 / 2.54;
+
+function downloadChartImage(chartId, sizeName) {
+  const cfg = chartConfigs[chartId];
+  if (!cfg) return;
+  const size = SIZES[sizeName];
+  const scale = 2;
+  const wPx = Math.round(size.w * PX_PER_CM);
+  const hPx = Math.round(size.h * PX_PER_CM);
+
+  const wrap = document.createElement('div');
+  wrap.style.cssText = `position:fixed;left:-99999px;top:0;width:${wPx}px;height:${hPx}px;background:#fff;`;
+  const canvas = document.createElement('canvas');
+  canvas.width = wPx * scale;
+  canvas.height = hPx * scale;
+  canvas.style.width = wPx + 'px';
+  canvas.style.height = hPx + 'px';
+  wrap.appendChild(canvas);
+  document.body.appendChild(wrap);
+
+  const opts = cfg.optsFn();
+  opts.responsive = false;
+  opts.maintainAspectRatio = false;
+  opts.animation = false;
+  opts.devicePixelRatio = scale;
+  opts.plugins.tooltip.enabled = false;
+  opts.layout = { padding: { top: 4, right: 8, bottom: 4, left: 4 } };
+
+  const tempChart = new Chart(canvas, {
+    type: cfg.type,
+    data: {
+      labels: cfg.data.labels,
+      datasets: cfg.data.datasets.map(d => Object.assign({}, d))
+    },
+    options: opts,
+    plugins: (cfg.type === 'bar' && !NO_DATA_LABELS.has(chartId)) ? [barDataLabels] : []
+  });
+
+  setTimeout(() => {
+    const bg = document.createElement('canvas');
+    bg.width = canvas.width;
+    bg.height = canvas.height;
+    const ctx = bg.getContext('2d');
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, bg.width, bg.height);
+    ctx.drawImage(canvas, 0, 0);
+    const dataUrl = bg.toDataURL('image/png');
+
+    const a = document.createElement('a');
+    a.href = dataUrl;
+    a.download = `${cfg.title}_${sizeName}_${size.w}x${size.h}cm.png`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+
+    tempChart.destroy();
+    document.body.removeChild(wrap);
+  }, 150);
+}
+
+function downloadCSV(which) {
+  let headers, lines = [], filename, fmt;
+  if (which === 'incc') {
+    headers = ['Data','INCC y/y (%)','Mao de Obra y/y (%)','Materiais e Servicos y/y (%)','Alvenaria y/y (%)','Formas de Aluminio y/y (%)'];
+    fmt = (v) => v == null ? '' : v.toFixed(4);
+    lines.push(headers.join(','));
+    for (let i = 0; i < inccLabels.length; i++) {
+      lines.push([inccLabels[i], fmt(inccSeries.incc[i]), fmt(inccSeries.labor[i]), fmt(inccSeries.mats[i]), fmt(inccSeries.mason[i]), fmt(inccSeries.alum[i])].join(','));
+    }
+    filename = `INCC_base_${new Date().toISOString().slice(0,10)}.csv`;
+  } else if (which === 'sbpe') {
+    headers = ['Data','Depositos (R$ bi)','Saques (R$ bi)','Captacao Liquida Mensal (R$ bi)','Rendimento (R$ bi)','Saldo Final (R$ bi)','Captacao Liquida LTM (R$ bi)'];
+    fmt = (v) => v == null ? '' : v.toFixed(4);
+    lines.push(headers.join(','));
+    for (let i = 0; i < sbpeLabels.length; i++) {
+      lines.push([sbpeLabels[i], fmt(sbpeSeries.dep[i]), fmt(sbpeSeries.wd[i]), fmt(sbpeSeries.net[i]), fmt(sbpeSeries.inc[i]), fmt(sbpeSeries.bal[i]), fmt(sbpeSeries.ltm[i])].join(','));
+    }
+    filename = `SBPE_base_${new Date().toISOString().slice(0,10)}.csv`;
+  } else {
+    headers = ['Regiao','UF','Coluna','Ano','Mes','Valor (R$ mi)'];
+    fmt = (v) => v == null ? '' : v.toFixed(4);
+    lines.push(headers.join(','));
+    const colLabels = { col_i:'Construction Loans (Apoio Producao PJ)', col_ii:'Mortgages Apoio Producao PF', col_iii:'Mortgages Imovel Novo (CCI exc usado)', col_iv:'Mortgages Imovel Usado (CCI)', col_v:'Social Fund Faixa 4', col_vi:'Mortgages Classe Media Novo (Contrap SBPE + Faixa Est exc usado)', col_vii:'Mortgages Classe Media Usado (Contrap SBPE + Faixa Est)' };
+    fgtsData.regions_order.forEach(region => {
+      fgtsData.ufs_by_region[region].forEach(uf => {
+        Object.keys(fgtsData.data).forEach(colKey => {
+          const series = (fgtsData.data[colKey] || {})[uf] || {};
+          Object.keys(series).sort().forEach(ym => {
+            const [y,m] = ym.split('-');
+            lines.push([region, uf, colLabels[colKey], y, m, fmt(series[ym])].join(','));
+          });
+        });
+      });
+    });
+    filename = `FGTS_base_${new Date().toISOString().slice(0,10)}.csv`;
+  }
+  const csv = '﻿' + lines.join('\n');
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+</script>
+
+<script>
+/* ============================================================
+   JS DA PÁGINA FGTS EXPANDIDA (versão nova)
+   ============================================================ */
+
 /* =========================================================================
    DADOS — Originação por modalidade × UF × mês (do protótipo original).
    Em produção isso virá da API alimentada pelos scripts Python.
@@ -1243,7 +2332,9 @@ renderStackChart();
 renderTopUfChart('2026-04');
 renderHeatmap('2026-04');
 renderFgtsTable('2026-04');
+
 </script>
+
 </div><!-- /app -->
 </body>
 </html>
